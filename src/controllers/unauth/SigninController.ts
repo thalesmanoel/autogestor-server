@@ -9,7 +9,7 @@ const SECRET = process.env.JWT_SECRET || "minha_chave_secreta";
 export default class SigninController {
   register = async (req: Request, res: Response) => {
     try {
-      const { name, email, password, role } = req.body;
+      const { name, email, cellphone, password, role } = req.body;
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -17,12 +17,14 @@ export default class SigninController {
         name,
         email,
         password: hashedPassword,
+        cellphone,
         role: role || Role.EMPLOYER,
       });
 
-      res.status(201).json({ message: "User created", user });
+      res.status(201).json({ message: "Usuário criado com sucesso", user });
     } catch (err) {
-      res.status(500).json({ error: "Error creating user" });
+      res.status(500).json({ error: "Erro ao criar usuário" });
+      console.error("Error creating user:", err);
     }
   };
 
@@ -32,11 +34,11 @@ export default class SigninController {
 
       const user = await User.findOne({ email });
 
-      if (!user) return res.status(401).json({ message: "User not found" });
+      if (!user) return res.status(401).json({ message: "Usuário não encontrado" });
 
       const match = await bcrypt.compare(password, user.password);
 
-      if (!match) return res.status(401).json({ message: "Invalid password" });
+      if (!match) return res.status(401).json({ message: "Senha incorreta" });
 
       const token = jwt.sign(
         { id: user._id, email: user.email, role: user.role },
