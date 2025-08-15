@@ -13,6 +13,9 @@ export interface IServiceOrder extends Document {
     deadline: Date;
     completionDate: Date;
     pickupDate: Date;
+    totalValue: number;
+    payementType: string;
+    payement: boolean;
 }
 
 const ServiceOrderSchema = new Schema<IServiceOrder>(
@@ -28,6 +31,9 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
     deadline: { type: Date },
     completionDate: { type: Date },
     pickupDate: { type: Date },
+    totalValue: { type: Number },
+    payementType: { type: String },
+    payement: { type: Boolean },
   },
   { timestamps: true }
 );
