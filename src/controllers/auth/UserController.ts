@@ -38,7 +38,10 @@ export default class UserController {
 
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = await this.userService.update(req.params.id, req.body);
+      const { id } = req.params;
+      const data = req.body;
+      
+      const user = await this.userService.update(id, data);
       if (!user) return res.status(404).json({ message: "Usuário não encontrado" });
       res.json(user);
     } catch (error) {

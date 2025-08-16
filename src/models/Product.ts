@@ -2,19 +2,19 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IProduct extends Document {
     name: string;
-    quantity: string;
-    providerId: mongoose.Types.ObjectId;
+    quantity: number;
+    providerId?: mongoose.Types.ObjectId;
     price: number;
-    sellPrice: number;
+    salePrice?: number;
 }
 
 const ProductSchema = new Schema<IProduct>(
   {
     name: { type: String, required: true },
-    quantity: { type: String, required: true },
+    quantity: { type: Number, required: true },
     providerId: { type: mongoose.Schema.Types.ObjectId },
     price: { type: Number, required: true },
-    sellPrice: { type: Number, required: true },
+    salePrice: { type: Number },
   },
   { timestamps: true }
 );

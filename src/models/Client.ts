@@ -5,17 +5,18 @@ export interface IClient extends Document {
     email: string;
     address: string;
     cellphone: string;
-    vehicleId: mongoose.Types.ObjectId;
-    cpf: string;
-    cnpj: string;
+    vehicleId?: mongoose.Types.ObjectId;
+    cpf?: string;
+    cnpj?: string;
 }
 
 const ClientSchema = new Schema<IClient>(
   {
-    name: { type: String },
-    email: { type: String },
-    address: { type: String },
-    cellphone: { type: String },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    address: { type: String, required: true },
+    cellphone: { type: String, required: true },
+    vehicleId: { type: Schema.Types.ObjectId },
     cpf: { type: String },
     cnpj: { type: String },
   },

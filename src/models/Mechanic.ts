@@ -9,10 +9,10 @@ export interface IMechanic extends Document {
 
 const MechanicSchema = new Schema<IMechanic>(
   {
-    name: { type: String },
-    email: { type: String },
-    cellphone: { type: String },
-    address: { type: String },
+    name: { type: String, required: true },
+    email: { type: String, required: true, unique: true },
+    cellphone: { type: String, required: true },
+    address: { type: String, required: true },
   },
   { timestamps: true }
 );
