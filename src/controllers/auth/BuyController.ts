@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import BuyService from "../../services/BuyService";
+import { Types } from "mongoose";
 
 export default class BuyController {
   private buyService: BuyService;
@@ -10,7 +11,7 @@ export default class BuyController {
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const buy = await this.buyService.create(req.body);
+      const buy = await this.buyService.createBuy(req.body);
       res.status(201).json(buy);
     } catch (error) {
       next(error);
@@ -28,7 +29,7 @@ export default class BuyController {
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const buy = await this.buyService.findById(req.params.id);
+      const buy = await this.buyService.findById(new Types.ObjectId(req.params.id));
       if (!buy) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(buy);
     } catch (error) {
@@ -40,8 +41,8 @@ export default class BuyController {
     try {
       const { id } = req.params;
       const data = req.body;
-      
-      const buy = await this.buyService.update(id, data);
+
+      const buy = await this.buyService.update(new Types.ObjectId(id), data);
       if (!buy) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(buy);
     } catch (error) {
@@ -51,7 +52,7 @@ export default class BuyController {
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const buy = await this.buyService.delete(req.params.id);
+      const buy = await this.buyService.delete(new Types.ObjectId(req.params.id));
       if (!buy) return res.status(404).json({ message: "Produto não encontrado" });
       res.json({ message: "Produto deletado com sucesso" });
     } catch (error) {

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import ServiceListService from "../../services/ServiceListService";
+import { Types } from "mongoose";
 
 export default class ServiceController {
   private serviceListService: ServiceListService;
@@ -28,7 +29,7 @@ export default class ServiceController {
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const service = await this.serviceListService.findById(req.params.id);
+      const service = await this.serviceListService.findById(new Types.ObjectId(req.params.id));
       if (!service) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(service);
     } catch (error) {
@@ -41,7 +42,7 @@ export default class ServiceController {
       const { id } = req.params;
       const data = req.body;
 
-      const service = await this.serviceListService.update(id, data);
+      const service = await this.serviceListService.update(new Types.ObjectId(id), data);
       if (!service) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(service);
     } catch (error) {
@@ -51,7 +52,7 @@ export default class ServiceController {
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const service = await this.serviceListService.delete(req.params.id);
+      const service = await this.serviceListService.delete(new Types.ObjectId(req.params.id));
       if (!service) return res.status(404).json({ message: "Produto não encontrado" });
       res.json({ message: "Produto deletado com sucesso" });
     } catch (error) {

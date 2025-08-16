@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import UserService from "../../services/UserService";
+import { Types } from "mongoose";
 
 export default class UserController {
   private userService: UserService;
@@ -28,7 +29,7 @@ export default class UserController {
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = await this.userService.findById(req.params.id);
+      const user = await this.userService.findById(new Types.ObjectId(req.params.id));
       if (!user) return res.status(404).json({ message: "Usuário não encontrado" });
       res.json(user);
     } catch (error) {
@@ -40,8 +41,8 @@ export default class UserController {
     try {
       const { id } = req.params;
       const data = req.body;
-      
-      const user = await this.userService.update(id, data);
+
+      const user = await this.userService.update(new Types.ObjectId(id), data);
       if (!user) return res.status(404).json({ message: "Usuário não encontrado" });
       res.json(user);
     } catch (error) {
@@ -51,7 +52,7 @@ export default class UserController {
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = await this.userService.delete(req.params.id);
+      const user = await this.userService.delete(new Types.ObjectId(req.params.id));
       if (!user) return res.status(404).json({ message: "Usuário não encontrado" });
       res.json({ message: "Usuário deletado com sucesso" });
     } catch (error) {

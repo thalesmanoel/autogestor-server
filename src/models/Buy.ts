@@ -1,16 +1,18 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IBuy extends Document {
     name: string;
-    quantity: string;
+    quantity: number;
     price: number;
+    productId?: Types.ObjectId;
 }
 
 const BuySchema = new Schema<IBuy>(
   {
     name: { type: String, required: true },
-    quantity: { type: String, required: true },
+    quantity: { type: Number, required: true },
     price: { type: Number, required: true },
+    productId: { type: Schema.Types.ObjectId }
   },
   { timestamps: true }
 );

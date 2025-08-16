@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import ProductService from "../../services/ProductService";
+import { Types } from "mongoose";
 
 export default class ProductController {
   private productService: ProductService;
@@ -28,7 +29,7 @@ export default class ProductController {
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const product = await this.productService.findById(req.params.id);
+      const product = await this.productService.findById(new Types.ObjectId(req.params.id));
       if (!product) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(product);
     } catch (error) {
@@ -40,8 +41,8 @@ export default class ProductController {
     try {
       const { id } = req.params;
       const data = req.body;
-      
-      const product = await this.productService.update(id, data);
+
+      const product = await this.productService.update(new Types.ObjectId(id), data);
       if (!product) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(product);
     } catch (error) {
@@ -51,7 +52,7 @@ export default class ProductController {
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const product = await this.productService.delete(req.params.id);
+      const product = await this.productService.delete(new Types.ObjectId(req.params.id));
       if (!product) return res.status(404).json({ message: "Produto não encontrado" });
       res.json({ message: "Produto deletado com sucesso" });
     } catch (error) {

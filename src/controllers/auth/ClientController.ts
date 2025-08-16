@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import ClientService from "../../services/ClientService";
+import { Types } from "mongoose";
 
 export default class ClientController {
   private clientService: ClientService;
@@ -28,7 +29,7 @@ export default class ClientController {
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const client = await this.clientService.findById(req.params.id);
+      const client = await this.clientService.findById(new Types.ObjectId(req.params.id));
       if (!client) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(client);
     } catch (error) {
@@ -40,8 +41,8 @@ export default class ClientController {
     try {
       const { id } = req.params;
       const data = req.body;
-      
-      const client = await this.clientService.update(id, data);
+
+      const client = await this.clientService.update(new Types.ObjectId(id), data);
       if (!client) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(client);
     } catch (error) {
@@ -51,7 +52,7 @@ export default class ClientController {
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const client = await this.clientService.delete(req.params.id);
+      const client = await this.clientService.delete(new Types.ObjectId(req.params.id));
       if (!client) return res.status(404).json({ message: "Produto não encontrado" });
       res.json({ message: "Produto deletado com sucesso" });
     } catch (error) {

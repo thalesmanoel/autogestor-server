@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import VehicleService from "../../services/VehicleService";
+import { Types } from "mongoose";
 
 export default class VehicleController {
   private vehicleService: VehicleService;
@@ -28,7 +29,7 @@ export default class VehicleController {
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const vehicle = await this.vehicleService.findById(req.params.id);
+      const vehicle = await this.vehicleService.findById(new Types.ObjectId(req.params.id));
       if (!vehicle) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(vehicle);
     } catch (error) {
@@ -40,8 +41,8 @@ export default class VehicleController {
     try {
       const { id } = req.params;
       const data = req.body;
-      
-      const vehicle = await this.vehicleService.update(id, data);
+
+      const vehicle = await this.vehicleService.update(new Types.ObjectId(id), data);
       if (!vehicle) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(vehicle);
     } catch (error) {
@@ -51,7 +52,7 @@ export default class VehicleController {
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const vehicle = await this.vehicleService.delete(req.params.id);
+      const vehicle = await this.vehicleService.delete(new Types.ObjectId(req.params.id));
       if (!vehicle) return res.status(404).json({ message: "Produto não encontrado" });
       res.json({ message: "Produto deletado com sucesso" });
     } catch (error) {

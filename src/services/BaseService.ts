@@ -1,5 +1,5 @@
 import BaseRepository from "../repositories/BaseRepository";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
 
 export default class BaseService<T extends Document> {
   protected repository: BaseRepository<T>;
@@ -16,15 +16,15 @@ export default class BaseService<T extends Document> {
     return this.repository.findAll();
   }
 
-  async findById(id: string) {
+  async findById(id: Types.ObjectId) {
     return this.repository.findById(id);
   }
 
-  async update(id: string, data: Partial<T>) {
+  async update(id: Types.ObjectId, data: Partial<T>) {
     return this.repository.update(id, data);
   }
 
-  async delete(id: string) {
+  async delete(id: Types.ObjectId) {
     return this.repository.delete(id);
   }
 }
