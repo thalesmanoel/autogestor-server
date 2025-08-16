@@ -5,7 +5,6 @@ export interface IVehicle extends Document {
     name: string;
     year: number;
     fuel: string;
-    clientId: mongoose.Types.ObjectId;
 }
 
 const VehicleSchema = new Schema<IVehicle>(
@@ -14,7 +13,6 @@ const VehicleSchema = new Schema<IVehicle>(
     name: { type: String, required: true },
     year: { type: Number, required: true },
     fuel: { type: String, required: true },
-    clientId: { type: mongoose.Schema.Types.ObjectId, required: true },
   },
   { timestamps: true }
 );
