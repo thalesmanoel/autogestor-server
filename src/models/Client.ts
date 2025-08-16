@@ -17,8 +17,8 @@ const ClientSchema = new Schema<IClient>(
     address: { type: String, required: true },
     cellphone: { type: String, required: true },
     vehicleId: { type: Schema.Types.ObjectId },
-    cpf: { type: String },
-    cnpj: { type: String },
+    cpf: { type: String, unique: true },
+    cnpj: { type: String, unique: true },
   },
   { timestamps: true }
 );
