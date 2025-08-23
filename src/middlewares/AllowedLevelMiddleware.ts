@@ -6,7 +6,7 @@ const AllowedRoles = (...allowedRoles: Role[]) => {
     const userRole = req.user?.role;
 
     if (!allowedRoles.includes(userRole as Role)) {
-      return res.status(403).json({ message: "User unauthorized" });
+      return res.status(403).json({ message: "Usuário não autorizado" });
     }
 
     next();

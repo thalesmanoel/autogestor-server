@@ -12,12 +12,6 @@ export default class BuyService extends BaseService<IBuy> {
   }
 
   async createBuy(data: IBuy): Promise<IBuy> {
-    if (data.productId) {
-      await this.productService.addQuantity(data.productId, data.quantity);
-    }else{
-      await this.productService.create(data);
-    }
-
     return this.repository.create(data);
   }
 }

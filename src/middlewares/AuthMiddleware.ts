@@ -25,7 +25,7 @@ export function authMiddleware(
 ) {
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    return res.status(401).json({ message: "Token not provided" });
+    return res.status(401).json({ message: "Token não fornecido" });
   }
 
   const [, token] = authHeader.split(" ");
@@ -35,6 +35,6 @@ export function authMiddleware(
     req.user = decoded as IJwtPayload;
     next();
   } catch (err) {
-    return res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Token inválido" });
   }
 }

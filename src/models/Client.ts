@@ -1,11 +1,11 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IClient extends Document {
     name: string;
     email: string;
     address: string;
     cellphone: string;
-    vehicleId?: mongoose.Types.ObjectId;
+    vehicleIds?: Types.ObjectId[];
     cpf?: string;
     cnpj?: string;
 }
@@ -16,7 +16,7 @@ const ClientSchema = new Schema<IClient>(
     email: { type: String, required: true, unique: true },
     address: { type: String, required: true },
     cellphone: { type: String, required: true },
-    vehicleId: { type: Schema.Types.ObjectId },
+    vehicleIds: [{ type: Schema.Types.ObjectId }],
     cpf: { type: String },
     cnpj: { type: String },
   },

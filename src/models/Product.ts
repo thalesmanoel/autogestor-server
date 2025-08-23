@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IProduct extends Document {
     name: string;
     quantity: number;
+    unitMeasure: string;
     providerId?: mongoose.Types.ObjectId;
     price: number;
     salePrice?: number;
