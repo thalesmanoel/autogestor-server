@@ -12,6 +12,6 @@ router.get("/:id", buyController.getById);
 router.put("/:id", buyController.update);
 router.delete("/:id", buyController.delete);
 
-router.post("/authorize/:id", AllowedRoles(Role.ADMIN), buyController.authorize);
+router.put("/authorize/:id", AllowedRoles(Role.ADMIN), buyController.authorize);
 
 export default router;

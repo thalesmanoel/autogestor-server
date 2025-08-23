@@ -38,16 +38,18 @@ export default class BuyService extends BaseService<IBuy> {
   }
 
   async authorize(id: Types.ObjectId, authorization: boolean) {
-    const buy = await this.repository.findById(id);
+    let buy = await this.repository.findById(id);
     if (!buy) throw new Error("Solicitação de compra não encontrada");
 
-    if(authorization){
+    if (authorization) {
       buy.authorized = true;
       buy.status = RequestBuyStatus.APPROVED;
-      await this.repository.update(id, buy);
-    }else{
+    } else {
+      buy.authorized = false;
       buy.status = RequestBuyStatus.REJECTED;
-      await this.repository.update(id, buy);
     }
+    await this.repository.update(id, buy);
+
+    return buy;
   }
 }
