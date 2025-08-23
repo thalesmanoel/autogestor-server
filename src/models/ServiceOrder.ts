@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document } from "mongoose";
-import Status from "../enums/Status";
+import OrderServiceStatus from "../enums/OrderServiceStatus";
 
 export interface IServiceOrder extends Document {
     clientId: mongoose.Types.ObjectId;
@@ -8,7 +8,7 @@ export interface IServiceOrder extends Document {
     description: string;
     technicalAnalysis?: string;
     unitValue: number;
-    status: Status;
+    status: OrderServiceStatus;
     entryDate?: Date;
     deadline?: Date;
     completionDate?: Date;
@@ -26,7 +26,7 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
     technicalAnalysis: { type: String },
     description: { type: String, required: true },
     unitValue: { type: Number, required: true },  
-    status: { type: String, enum: Object.values(Status) },
+    status: { type: String, enum: Object.values(OrderServiceStatus) },
     entryDate: { type: Date },
     deadline: { type: Date },
     completionDate: { type: Date },
