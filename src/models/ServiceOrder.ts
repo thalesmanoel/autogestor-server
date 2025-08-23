@@ -13,10 +13,10 @@ export interface IServiceOrder extends Document {
   deadline?: Date;
   completionDate?: Date;
   pickupDate?: Date;
-  totalValueProducts: number;
-  totalValueServices: number;
-  totalValueGeneral: number;
-  paymentType: string;
+  totalValueProducts?: number;
+  totalValueServices?: number;
+  totalValueGeneral?: number;
+  paymentType?: string;
   paid: boolean;
 }
 
@@ -36,7 +36,7 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
     totalValueProducts: { type: Number },
     totalValueServices: { type: Number },
     totalValueGeneral: { type: Number },
-    paymentType: { type: String, required: true },
+    paymentType: { type: String },
     paid: { type: Boolean },
   },
   { timestamps: true }

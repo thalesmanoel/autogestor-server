@@ -3,10 +3,10 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IProduct extends Document {
     name: string;
     quantity: number;
-    unitMeasure: string;
-    providerId?: mongoose.Types.ObjectId;
-    price: number;
+    costUnitPrice: number;
     salePrice?: number;
+    grossProfitMargin?: number;
+    providerId?: mongoose.Types.ObjectId;
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -14,8 +14,9 @@ const ProductSchema = new Schema<IProduct>(
     name: { type: String, required: true },
     quantity: { type: Number, required: true },
     providerId: { type: mongoose.Schema.Types.ObjectId },
-    price: { type: Number, required: true },
+    costUnitPrice: { type: Number, required: true },
     salePrice: { type: Number },
+    grossProfitMargin: { type: Number },
   },
   { timestamps: true }
 );

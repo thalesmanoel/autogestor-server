@@ -11,7 +11,15 @@ export default class BuyController {
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const buy = await this.buyService.createBuy(req.body);
+      if (!req.user || !req.user.id) {
+        return res.status(401).json({ message: "Usuário não autenticado" });
+      }
+
+      const userId = req.user.id;
+      const data = req.body;
+      data.userId = new Types.ObjectId(userId);
+
+      const buy = await this.buyService.create(data);
       res.status(201).json(buy);
     } catch (error) {
       next(error);
@@ -30,7 +38,7 @@ export default class BuyController {
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const buy = await this.buyService.findById(new Types.ObjectId(req.params.id));
-      if (!buy) return res.status(404).json({ message: "Produto não encontrado" });
+      if (buy === null) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(buy);
     } catch (error) {
       next(error);
@@ -42,8 +50,23 @@ export default class BuyController {
       const { id } = req.params;
       const data = req.body;
 
-      const buy = await this.buyService.update(new Types.ObjectId(id), data);
+      const buy = await this.buyService.updateBuy(new Types.ObjectId(id), data);
       if (!buy) return res.status(404).json({ message: "Produto não encontrado" });
+      res.json(buy);
+    } catch (error) {
+      next(error);
+    }
+  };
+
+  authorize = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const { authorization } = req.body;
+
+      const buy = await this.buyService.authorize(new Types.ObjectId(id), authorization);
+
+      if (buy == null) 
+        return res.status(404).json({ message: "Solicitação de compra não encontrada" });
       res.json(buy);
     } catch (error) {
       next(error);

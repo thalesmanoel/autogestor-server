@@ -6,6 +6,7 @@ export interface IVehicle extends Document {
     year: number;
     fuel: string;
     licensePlate: string;
+    chassi?: string;
 }
 
 const VehicleSchema = new Schema<IVehicle>(
@@ -15,6 +16,7 @@ const VehicleSchema = new Schema<IVehicle>(
     year: { type: Number, required: true },
     fuel: { type: String, required: true },
     licensePlate: { type: String, required: true },
+    chassi: { type: String },
   },
   { timestamps: true }
 );

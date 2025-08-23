@@ -11,26 +11,24 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     super(new ServiceOrderRepository());
   }
 
-  async createServiceOrder(data: IServiceOrder): Promise<IServiceOrder> {
-  if (data.productIds && data.productIds.length > 0) {
-    for (const id of data.productIds) {
-      const product = await Product.findById(id);
+    async createServiceOrder(data: IServiceOrder): Promise<IServiceOrder> {
+    if (data.productIds && data.productIds.length > 0) {
+      for (const id of data.productIds) {
+        const product = await Product.findById(id);
 
-      if (product && product.quantity < 1) {
-        const requestBuy = await Buy.findOne({
-          "products.productId": id,
-        });
+        if (product && product.quantity < 1) {
+          const requestBuy = await Buy.findOne({
+            "products.productId": id,
+          });
 
-        if (requestBuy && requestBuy.status !== RequestBuyStatus.DELIVERED) {
-          data.status = OrderServiceStatus.PENDING;
-          break;
+          if (requestBuy && requestBuy.status !== RequestBuyStatus.DELIVERED) {
+            data.status = OrderServiceStatus.PENDING;
+            break;
+          }
         }
       }
     }
+
+    return this.repository.create(data);
   }
-
-  return this.repository.create(data);
-}
-
-
 }
