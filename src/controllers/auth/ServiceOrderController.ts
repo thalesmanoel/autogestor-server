@@ -50,6 +50,21 @@ export default class ServiceOrderController {
     }
   };
 
+  changeStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+
+      const serviceOrder = await this.serviceOrderService.changeStatus(new Types.ObjectId(id), status);
+
+      if (!serviceOrder)
+        return res.status(404).json({ message: "Ordem de serviço não encontrada" });
+      res.status(200).json(serviceOrder);
+    } catch (error) {
+      next(error);
+    }
+  };
+
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const serviceOrder = await this.serviceOrderService.delete(new Types.ObjectId(req.params.id));

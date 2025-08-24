@@ -1,11 +1,12 @@
 import mongoose, { Schema, Document } from "mongoose";
 import OrderServiceStatus from "../enums/OrderServiceStatus";
+import { IProductItem, ProductItemSchema } from "./ProductItem";
 
 export interface IServiceOrder extends Document {
   code: string;
   clientId: mongoose.Types.ObjectId;
   serviceId: mongoose.Types.ObjectId;
-  productIds?: mongoose.Types.ObjectId[];
+  products?: IProductItem[];
   description: string;
   technicalAnalysis?: string;
   status: OrderServiceStatus;
@@ -25,7 +26,7 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
     code: { type: String, required: true, unique: true },
     clientId: { type: Schema.Types.ObjectId, required: true },
     serviceId: { type: Schema.Types.ObjectId, required: true },
-    productIds: [{ type: Schema.Types.ObjectId }],
+    products: [ProductItemSchema],
     technicalAnalysis: { type: String },
     description: { type: String, required: true },
     status: { type: String, enum: Object.values(OrderServiceStatus) },
