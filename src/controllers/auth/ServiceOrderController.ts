@@ -42,7 +42,7 @@ export default class ServiceOrderController {
       const { id } = req.params;
       const data = req.body;
 
-      const serviceOrder = await this.serviceOrderService.update(new Types.ObjectId(id), data);
+      const serviceOrder = await this.serviceOrderService.updateServiceOrder(new Types.ObjectId(id), data);
       if (!serviceOrder) return res.status(404).json({ message: "Produto não encontrado" });
       res.json(serviceOrder);
     } catch (error) {
