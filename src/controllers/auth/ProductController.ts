@@ -18,9 +18,21 @@ export default class ProductController {
     }
   };
 
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const products = await this.productService.findAll();
+      const { page, limit, date, identifier, search } = req.query;
+
+      const identifierVerified = identifier ? String(identifier) : undefined;
+      const searchVerified = search ? String(search) : undefined;
+      const dateVerified = date ? new Date(String(date)) : undefined;
+
+      const products = await this.productService.aggregatePaginate(
+        Number(page),
+        Number(limit),
+        dateVerified,
+        identifierVerified,
+        searchVerified
+      );
       res.json(products);
     } catch (error) {
       next(error);
