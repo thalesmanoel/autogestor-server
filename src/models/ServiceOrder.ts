@@ -1,8 +1,9 @@
-import mongoose, { Schema, Document } from "mongoose";
-import OrderServiceStatus from "../enums/OrderServiceStatus";
-import { IProductItem, ProductItemSchema } from "./ProductItem";
-import { IClient } from "./Client";
-import { IService } from "./Service";
+import mongoose, { Document, Schema } from 'mongoose'
+
+import OrderServiceStatus from '../enums/OrderServiceStatus'
+import { IClient } from './Client'
+import { IProductItem, ProductItemSchema } from './ProductItem'
+import { IService } from './Service'
 
 export interface IServiceOrder extends Document {
   code: string;
@@ -40,9 +41,9 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
     totalValueServices: { type: Number },
     totalValueGeneral: { type: Number },
     paymentType: { type: String },
-    paid: { type: Boolean },
+    paid: { type: Boolean }
   },
   { timestamps: true }
-);
+)
 
-export default mongoose.model<IServiceOrder>("ServiceOrder", ServiceOrderSchema);
+export default mongoose.model<IServiceOrder>('ServiceOrder', ServiceOrderSchema)

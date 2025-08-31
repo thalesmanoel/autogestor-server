@@ -1,15 +1,16 @@
-import { Router } from "express";
-import ServiceOrderController from "../controllers/auth/ServiceOrderController";
+import { Router } from 'express'
 
-const router = Router();
-const serviceOrderController = new ServiceOrderController();
+import ServiceOrderController from '../controllers/auth/ServiceOrderController'
 
-router.post("/", serviceOrderController.create);
-router.get("/", serviceOrderController.getAll);
-router.get("/:id", serviceOrderController.getById);
-router.put("/:id", serviceOrderController.update);
-router.delete("/:id", serviceOrderController.delete);
+const router = Router()
+const serviceOrderController = new ServiceOrderController()
 
-router.post("/export-pdf/:id", serviceOrderController.exportPdf);
+router.post('/', serviceOrderController.create)
+router.get('/', serviceOrderController.getAll)
+router.get('/:id', serviceOrderController.getById)
+router.put('/:id', serviceOrderController.update)
+router.delete('/:id', serviceOrderController.delete)
 
-export default router;
+router.post('/export-pdf/:id', serviceOrderController.exportPdf)
+
+export default router

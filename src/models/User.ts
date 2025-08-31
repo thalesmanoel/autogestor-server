@@ -1,5 +1,6 @@
-import mongoose, { Schema, Document } from "mongoose";
-import Role from "../enums/Role";
+import mongoose, { Document, Schema } from 'mongoose'
+
+import Role from '../enums/Role'
 
 export interface IUser extends Document {
   name: string;
@@ -18,10 +19,10 @@ const UserSchema = new Schema<IUser>(
     role: {
       type: String,
       enum: Object.values(Role),
-      required: true,
-    },
+      required: true
+    }
   },
   { timestamps: true }
-);
+)
 
-export default mongoose.model<IUser>("User", UserSchema);
+export default mongoose.model<IUser>('User', UserSchema)

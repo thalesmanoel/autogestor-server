@@ -1,13 +1,14 @@
-import { Router } from "express";
-import ProviderController from "../controllers/auth/ProviderController";
+import { Router } from 'express'
 
-const router = Router();
-const providerController = new ProviderController();
+import ProviderController from '../controllers/auth/ProviderController'
 
-router.post("/", providerController.create);
-router.get("/", providerController.getAll);
-router.get("/:id", providerController.getById);
-router.put("/:id", providerController.update);
-router.delete("/:id", providerController.delete);
+const router = Router()
+const providerController = new ProviderController()
 
-export default router;
+router.post('/', providerController.create)
+router.get('/', providerController.getAll)
+router.get('/:id', providerController.getById)
+router.put('/:id', providerController.update)
+router.delete('/:id', providerController.delete)
+
+export default router

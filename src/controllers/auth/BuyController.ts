@@ -1,85 +1,85 @@
-import { Request, Response, NextFunction } from "express";
-import BuyService from "../../services/BuyService";
-import { Types } from "mongoose";
+import { NextFunction, Request, Response } from 'express'
+import { Types } from 'mongoose'
+
+import BuyService from '../../services/BuyService'
 
 export default class BuyController {
-  private buyService: BuyService;
+  private buyService: BuyService
 
-  constructor() {
-    this.buyService = new BuyService();
+  constructor () {
+    this.buyService = new BuyService()
   }
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
       if (!req.user || !req.user.id) {
-        return res.status(401).json({ message: "Usuário não autenticado" });
+        return res.status(401).json({ message: 'Usuário não autenticado' })
       }
 
-      const userId = req.user.id;
-      const data = req.body;
-      data.userId = new Types.ObjectId(userId);
+      const userId = req.user.id
+      const data = req.body
+      data.userId = new Types.ObjectId(userId)
 
-      const buy = await this.buyService.create(data);
-      res.status(201).json(buy);
+      const buy = await this.buyService.create(data)
+      res.status(201).json(buy)
     } catch (error) {
-      next(error);
+      next(error)
     }
-  };
+  }
 
   getAll = async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const buys = await this.buyService.findAll();
-      res.json(buys);
+      const buys = await this.buyService.findAll()
+      res.json(buys)
     } catch (error) {
-      next(error);
+      next(error)
     }
-  };
+  }
 
   getById = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const buy = await this.buyService.findById(new Types.ObjectId(req.params.id));
-      if (buy === null) return res.status(404).json({ message: "Produto não encontrado" });
-      res.json(buy);
+      const buy = await this.buyService.findById(new Types.ObjectId(req.params.id))
+      if (buy === null) return res.status(404).json({ message: 'Produto não encontrado' })
+      res.json(buy)
     } catch (error) {
-      next(error);
+      next(error)
     }
-  };
+  }
 
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const data = req.body;
+      const { id } = req.params
+      const data = req.body
 
-      const buy = await this.buyService.updateBuy(new Types.ObjectId(id), data);
-      if (!buy) return res.status(404).json({ message: "Produto não encontrado" });
-      res.json(buy);
+      const buy = await this.buyService.updateBuy(new Types.ObjectId(id), data)
+      if (!buy) return res.status(404).json({ message: 'Produto não encontrado' })
+      res.json(buy)
     } catch (error) {
-      next(error);
+      next(error)
     }
-  };
+  }
 
   authorize = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { id } = req.params;
-      const { authorization } = req.body;
+      const { id } = req.params
+      const { authorization } = req.body
 
-      const buy = await this.buyService.authorize(new Types.ObjectId(id), authorization);
+      const buy = await this.buyService.authorize(new Types.ObjectId(id), authorization)
 
-      if (buy == null) 
-        return res.status(404).json({ message: "Solicitação de compra não encontrada" });
-      res.json(buy);
+      if (buy == null) { return res.status(404).json({ message: 'Solicitação de compra não encontrada' }) }
+      res.json(buy)
     } catch (error) {
-      next(error);
+      next(error)
     }
-  };
+  }
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const buy = await this.buyService.delete(new Types.ObjectId(req.params.id));
-      if (!buy) return res.status(404).json({ message: "Produto não encontrado" });
-      res.json({ message: "Produto deletado com sucesso" });
+      const buy = await this.buyService.delete(new Types.ObjectId(req.params.id))
+      if (!buy) return res.status(404).json({ message: 'Produto não encontrado' })
+      res.json({ message: 'Produto deletado com sucesso' })
     } catch (error) {
-      next(error);
+      next(error)
     }
-  };
+  }
 }

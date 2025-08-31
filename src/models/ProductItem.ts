@@ -1,4 +1,4 @@
-import mongoose, { Schema, Types } from "mongoose";
+import { Schema, Types } from 'mongoose'
 
 export interface IProductItem {
   productId: Types.ObjectId;
@@ -16,7 +16,7 @@ export const ProductItemSchema = new Schema<IProductItem>(
     costUnitPrice: { type: Number },
     salePrice: { type: Number },
     grossProfitMargin: { type: Number },
-    providerId: { type: Schema.Types.ObjectId },
+    providerId: { type: Schema.Types.ObjectId }
   },
   { _id: false } // subdocumento, não precisa de _id
-);
+)

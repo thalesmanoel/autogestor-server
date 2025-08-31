@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Document, Schema } from 'mongoose'
 
 export interface IService extends Document {
     title: string;
@@ -10,9 +10,9 @@ const ServiceSchema = new Schema<IService>(
   {
     title: { type: String, required: true },
     description: { type: String },
-    unitValue: { type: Number, required: true },
+    unitValue: { type: Number, required: true }
   },
   { timestamps: true }
-);
+)
 
-export default mongoose.model<IService>("Service", ServiceSchema);
+export default mongoose.model<IService>('Service', ServiceSchema)

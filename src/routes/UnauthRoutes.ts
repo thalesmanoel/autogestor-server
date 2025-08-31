@@ -1,10 +1,11 @@
-import { Router } from "express";
-import SigninController from "../controllers/unauth/SigninController";
+import { Router } from 'express'
 
-const router = Router();
-const signinController = new SigninController();
+import SigninController from '../controllers/unauth/SigninController'
 
-router.post("/login", signinController.login);
-router.post("/register", signinController.register);
+const router = Router()
+const signinController = new SigninController()
 
-export default router;
+router.post('/login', signinController.login)
+router.post('/register', signinController.register)
+
+export default router

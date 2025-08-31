@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, { Document, Schema, Types } from 'mongoose'
 
 export interface IClient extends Document {
     name: string;
@@ -18,9 +18,9 @@ const ClientSchema = new Schema<IClient>(
     cellphone: { type: String, required: true },
     vehicleIds: [{ type: Schema.Types.ObjectId }],
     cpf: { type: String },
-    cnpj: { type: String },
+    cnpj: { type: String }
   },
   { timestamps: true }
-);
+)
 
-export default mongoose.model<IClient>("Client", ClientSchema);
+export default mongoose.model<IClient>('Client', ClientSchema)

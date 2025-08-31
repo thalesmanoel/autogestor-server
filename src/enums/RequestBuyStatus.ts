@@ -1,8 +1,8 @@
 enum RequestBuyStatus {
-  PENDING = "pending",              
-  APPROVED = "approved",
-  REJECTED = "rejected",
-  DELIVERED = "delivered"           
+  PENDING = 'pending',
+  APPROVED = 'approved',
+  REJECTED = 'rejected',
+  DELIVERED = 'delivered'
 }
 
-export default RequestBuyStatus;
+export default RequestBuyStatus

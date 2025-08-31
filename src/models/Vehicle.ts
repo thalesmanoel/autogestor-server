@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Document, Schema } from 'mongoose'
 
 export interface IVehicle extends Document {
     brand: string;
@@ -16,9 +16,9 @@ const VehicleSchema = new Schema<IVehicle>(
     year: { type: Number, required: true },
     fuel: { type: String, required: true },
     licensePlate: { type: String, required: true },
-    chassi: { type: String },
+    chassi: { type: String }
   },
   { timestamps: true }
-);
+)
 
-export default mongoose.model<IVehicle>("Vehicle", VehicleSchema);
+export default mongoose.model<IVehicle>('Vehicle', VehicleSchema)

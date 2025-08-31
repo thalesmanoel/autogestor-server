@@ -1,15 +1,16 @@
-import { Router } from "express";
-import UserController from "../controllers/auth/UserController";
-import AllowedRoles from "../middlewares/AllowedLevelMiddleware";
-import Role from "../enums/Role";
+import { Router } from 'express'
 
-const router = Router();
-const userController = new UserController();
+import UserController from '../controllers/auth/UserController'
+import Role from '../enums/Role'
+import AllowedRoles from '../middlewares/AllowedLevelMiddleware'
 
-router.post("/", userController.create);
-router.get("/", AllowedRoles(Role.ADMIN), userController.getAll);
-router.get("/:id", userController.getById);
-router.put("/:id", userController.update);
-router.delete("/:id", userController.delete);
+const router = Router()
+const userController = new UserController()
 
-export default router;
+router.post('/', userController.create)
+router.get('/', AllowedRoles(Role.ADMIN), userController.getAll)
+router.get('/:id', userController.getById)
+router.put('/:id', userController.update)
+router.delete('/:id', userController.delete)
+
+export default router

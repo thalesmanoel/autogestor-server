@@ -1,13 +1,14 @@
-import { Router } from "express";
-import ClientController from "../controllers/auth/ClientController";
+import { Router } from 'express'
 
-const router = Router();
-const clientController = new ClientController();
+import ClientController from '../controllers/auth/ClientController'
 
-router.post("/", clientController.create);
-router.get("/", clientController.getAll);
-router.get("/:id", clientController.getById);
-router.put("/:id", clientController.update);
-router.delete("/:id", clientController.delete);
+const router = Router()
+const clientController = new ClientController()
 
-export default router;
+router.post('/', clientController.create)
+router.get('/', clientController.getAll)
+router.get('/:id', clientController.getById)
+router.put('/:id', clientController.update)
+router.delete('/:id', clientController.delete)
+
+export default router

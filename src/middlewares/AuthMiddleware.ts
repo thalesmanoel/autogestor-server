@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { NextFunction, Request, Response } from 'express'
+import jwt from 'jsonwebtoken'
 
 interface IJwtPayload {
   id: string;
@@ -16,25 +16,26 @@ declare global {
   }
 }
 
-const SECRET = process.env.JWT_SECRET || "minha_chave_secreta";
+const SECRET = process.env.JWT_SECRET || 'minha_chave_secreta'
 
-export function authMiddleware(
+export function authMiddleware (
   req: Request,
   res: Response,
   next: NextFunction
 ) {
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers.authorization
   if (!authHeader) {
-    return res.status(401).json({ message: "Token não fornecido" });
+    return res.status(401).json({ message: 'Token não fornecido' })
   }
 
-  const [, token] = authHeader.split(" ");
+  const [, token] = authHeader.split(' ')
 
   try {
-    const decoded = jwt.verify(token, SECRET);
-    req.user = decoded as IJwtPayload;
-    next();
+    const decoded = jwt.verify(token, SECRET)
+    req.user = decoded as IJwtPayload
+    next()
+  // eslint-disable-next-line unused-imports/no-unused-vars
   } catch (err) {
-    return res.status(401).json({ message: "Token inválido" });
+    return res.status(401).json({ message: 'Token inválido' })
   }
 }

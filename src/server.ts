@@ -1,21 +1,23 @@
-import "dotenv/config";
-import express from "express";
-import Database from "./config/Database";
-import routes from "./routes";
+import 'dotenv/config'
 
-const app = express();
-app.use(express.json());
+import express from 'express'
 
-Database.connect();
+import Database from './config/Database'
+import routes from './routes'
 
-const PORT = Number(process.env.PORT) || 3000;
+const app = express()
+app.use(express.json())
 
-app.use("/", routes); 
+Database.connect()
 
-app.get("/", (_req, res) => {
-  res.send("API rodando 🚀");
-});
+const PORT = Number(process.env.PORT) || 3000
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-});
+app.use('/', routes)
+
+app.get('/', (_req, res) => {
+  res.send('API rodando 🚀')
+})
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Servidor rodando na porta ${PORT}`)
+})

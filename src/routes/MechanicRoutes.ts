@@ -1,13 +1,14 @@
-import { Router } from "express";
-import MechanicController from "../controllers/auth/MechanicController";
+import { Router } from 'express'
 
-const router = Router();
-const mechanicController = new MechanicController();
+import MechanicController from '../controllers/auth/MechanicController'
 
-router.post("/", mechanicController.create);
-router.get("/", mechanicController.getAll);
-router.get("/:id", mechanicController.getById);
-router.put("/:id", mechanicController.update);
-router.delete("/:id", mechanicController.delete);
+const router = Router()
+const mechanicController = new MechanicController()
 
-export default router;
+router.post('/', mechanicController.create)
+router.get('/', mechanicController.getAll)
+router.get('/:id', mechanicController.getById)
+router.put('/:id', mechanicController.update)
+router.delete('/:id', mechanicController.delete)
+
+export default router

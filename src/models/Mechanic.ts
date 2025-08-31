@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Document, Schema } from 'mongoose'
 
 export interface IMechanic extends Document {
     name: string;
@@ -12,9 +12,9 @@ const MechanicSchema = new Schema<IMechanic>(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     cellphone: { type: String, required: true },
-    address: { type: String, required: true },
+    address: { type: String, required: true }
   },
   { timestamps: true }
-);
+)
 
-export default mongoose.model<IMechanic>("Mechanic", MechanicSchema);
+export default mongoose.model<IMechanic>('Mechanic', MechanicSchema)
