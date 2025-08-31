@@ -74,4 +74,13 @@ export default class ServiceOrderController {
       next(error);
     }
   };
+
+  exportPdf = async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      await this.serviceOrderService.exportPdf(new Types.ObjectId(id), res);
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  };
 }

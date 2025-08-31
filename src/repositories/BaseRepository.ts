@@ -15,7 +15,7 @@ export default class BaseRepository<T extends Document> {
     return this.model.find();
   }
 
-  async findById(id: Types.ObjectId): Promise<T | null> {
+  findById(id: Types.ObjectId) {
     return this.model.findById(id);
   }
 
@@ -25,6 +25,10 @@ export default class BaseRepository<T extends Document> {
 
   async delete(id: Types.ObjectId): Promise<T | null> {
     return this.model.findByIdAndDelete(id);
+  }
+
+  async aggregateMany(pipeline: any[]) {
+    return this.model.aggregate(pipeline);
   }
 
   async aggregatePaginate(pipeline: any[], page = 1, limit = 10) {

@@ -1,11 +1,13 @@
 import mongoose, { Schema, Document } from "mongoose";
 import OrderServiceStatus from "../enums/OrderServiceStatus";
 import { IProductItem, ProductItemSchema } from "./ProductItem";
+import { IClient } from "./Client";
+import { IService } from "./Service";
 
 export interface IServiceOrder extends Document {
   code: string;
-  clientId: mongoose.Types.ObjectId;
-  serviceId: mongoose.Types.ObjectId;
+  clientId: mongoose.Types.ObjectId | IClient;
+  serviceId: mongoose.Types.ObjectId | IService;
   products?: IProductItem[];
   description: string;
   technicalAnalysis?: string;
