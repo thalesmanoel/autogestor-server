@@ -10,10 +10,13 @@ import Service from '../models/Service'
 import { IServiceOrder } from '../models/ServiceOrder'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
+import ProductService from './ProductService'
 
 export default class ServiceOrderService extends BaseService<IServiceOrder> {
+  private productService: ProductService
   constructor () {
     super(new ServiceOrderRepository())
+    this.productService = new ProductService()
   }
 
   async calculateTotals (data: IServiceOrder): Promise<IServiceOrder> {
@@ -58,20 +61,36 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     return this.repository.create(data)
   }
 
-  // Muda o status da ordem de serviço e define a data de conclusão se for COMPLETED
-  async changeStatus (id: Types.ObjectId, status: string): Promise<IServiceOrder | null> {
+  async changeStatus (id: Types.ObjectId, status: OrderServiceStatus): Promise<IServiceOrder | null> {
     const serviceOrder = await this.repository.findById(id)
     if (!serviceOrder) return null
 
-    if (status === OrderServiceStatus.COMPLETED) {
-      serviceOrder.status = OrderServiceStatus.COMPLETED
-      serviceOrder.completionDate = new Date()
+    // Cancelamento da OS → devolve produtos ao estoque
+    if (status === OrderServiceStatus.CANCELED) {
+      for (const item of serviceOrder.products ?? []) {
+        const product = await this.productService.findById(item.productId)
+        if (!product) continue
 
+        product.quantity += item.quantity
+        await product.save()
+      }
+
+      serviceOrder.status = OrderServiceStatus.CANCELED
       await serviceOrder.save()
       return serviceOrder
     }
 
-    return null
+    if (status === OrderServiceStatus.COMPLETED) {
+      serviceOrder.status = OrderServiceStatus.COMPLETED
+      serviceOrder.completionDate = new Date()
+      await serviceOrder.save()
+      return serviceOrder
+    }
+
+    // Para outros status, apenas atualiza o status
+    serviceOrder.status = status
+    await serviceOrder.save()
+    return serviceOrder
   }
 
   // Atualiza uma ordem de serviço e recalcula os totais

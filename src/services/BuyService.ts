@@ -38,43 +38,56 @@ export default class BuyService extends BaseService<IBuy> {
     const buy = await this.repository.findById(id)
     if (!buy) throw new Error('Solicitação de compra não encontrada')
 
-    const isChangingToDelivered =
-    data.status === RequestBuyStatus.DELIVERED &&
-    buy.status !== RequestBuyStatus.DELIVERED
-
+    const previousStatus = buy.status
     Object.assign(buy, data)
     await this.repository.update(id, buy)
 
+    let serviceOrder = null
     if (buy.serviceOrderId) {
-      const serviceOrder = await this.serviceOrderRepository.findById(buy.serviceOrderId)
-      if (serviceOrder) {
-        if (isChangingToDelivered) {
-          if (serviceOrder.status === OrderServiceStatus.CANCELED) {
-          // Ordem cancelada -> adiciona produtos no estoque
-            for (const item of buy.products) {
-              const product = await this.productService.findById(item.productId)
-              if (!product) continue
+      serviceOrder = await this.serviceOrderRepository.findById(buy.serviceOrderId)
+      if (!serviceOrder) throw new Error('ID da ordem de serviço não encontrado')
+    }
 
-              product.quantity += item.quantity
-              await product.save()
-            }
-          } else {
-          // Ordem não cancelada -> muda status para PENDING
-            serviceOrder.status = OrderServiceStatus.PENDING
-            await serviceOrder.save()
-          }
-        } else if (
-          data.status === RequestBuyStatus.PENDING ||
-        data.status === RequestBuyStatus.APPROVED
-        ) {
-        // Enquanto não for delivered -> ordem fica em PENDING_PRODUCT
-          if (serviceOrder.status !== OrderServiceStatus.CANCELED) {
-            serviceOrder.status = OrderServiceStatus.PENDING_PRODUCT
-            await serviceOrder.save()
+    // Quando a compra é entregue
+    if (previousStatus !== RequestBuyStatus.DELIVERED &&
+      buy.status === RequestBuyStatus.DELIVERED) {
+      for (const item of buy.products) {
+        const product = await this.productService.findById(item.productId)
+        if (!product) continue
+
+        // Incrementa estoque da compra
+        product.quantity += item.quantity
+
+        // Se houver OS vinculada, retira do estoque o necessário
+        if (serviceOrder) {
+          const serviceOrderItem = serviceOrder.products?.find(p =>
+            p.productId.equals(item.productId)
+          )
+
+          if (serviceOrderItem) {
+            const neededQuantity = serviceOrderItem.quantity
+            const quantityForOS = Math.min(item.quantity, neededQuantity)
+            product.quantity -= quantityForOS
           }
         }
-      } else {
-        throw new Error('ID da ordem de serviço não encontrado')
+
+        await product.save()
+      }
+
+      // Atualiza status da OS se existir
+      if (serviceOrder && serviceOrder.status !== OrderServiceStatus.CANCELED) {
+        serviceOrder.status = OrderServiceStatus.PENDING
+        await serviceOrder.save()
+      }
+    }
+    // Status PENDING ou APPROVED → OS fica em PENDING_PRODUCT
+    else if (
+      buy.status === RequestBuyStatus.PENDING ||
+    buy.status === RequestBuyStatus.APPROVED
+    ) {
+      if (serviceOrder && serviceOrder.status !== OrderServiceStatus.CANCELED) {
+        serviceOrder.status = OrderServiceStatus.PENDING_PRODUCT
+        await serviceOrder.save()
       }
     }
 
