@@ -18,9 +18,10 @@ export default class BuyController {
 
       const userId = req.user.id
       const data = req.body
+      data.serviceOrderId = new Types.ObjectId(data.serviceOrderId)
       data.userId = new Types.ObjectId(userId)
 
-      const buy = await this.buyService.create(data)
+      const buy = await this.buyService.createBuy(data)
       res.status(201).json(buy)
     } catch (error) {
       next(error)

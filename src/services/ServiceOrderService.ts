@@ -58,6 +58,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     return this.repository.create(data)
   }
 
+  // Muda o status da ordem de serviço e define a data de conclusão se for COMPLETED
   async changeStatus (id: Types.ObjectId, status: string): Promise<IServiceOrder | null> {
     const serviceOrder = await this.repository.findById(id)
     if (!serviceOrder) return null
@@ -66,14 +67,6 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       serviceOrder.status = OrderServiceStatus.COMPLETED
       serviceOrder.completionDate = new Date()
 
-      for (const item of serviceOrder.products || []) {
-        const product = await Product.findById(item.productId)
-        if (product) {
-          product.quantity -= item.quantity
-          await product.save()
-        }
-      }
-
       await serviceOrder.save()
       return serviceOrder
     }
@@ -81,6 +74,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     return null
   }
 
+  // Atualiza uma ordem de serviço e recalcula os totais
   async updateServiceOrder (id: Types.ObjectId, data: Partial<IServiceOrder>): Promise<IServiceOrder | null> {
     const existingOrder = await this.repository.findById(id)
     if (!existingOrder) return null

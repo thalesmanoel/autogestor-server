@@ -12,7 +12,7 @@ export default class ProductController {
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const product = await this.productService.create(req.body)
+      const product = await this.productService.createProduct(req.body)
       res.status(201).json(product)
     } catch (error) {
       next(error)

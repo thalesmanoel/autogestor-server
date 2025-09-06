@@ -12,6 +12,7 @@ export interface IBuy extends Document {
   status?: RequestBuyStatus;
   totalValue?: number;
   userId: Types.ObjectId;
+  providerId?: Types.ObjectId;
 }
 
 const BuySchema = new Schema<IBuy>(

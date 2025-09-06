@@ -9,6 +9,11 @@ export default class ProductService extends BaseService<IProduct> {
     super(new ProductRepository())
   }
 
+  async createProduct (data: Partial<IProduct>): Promise<IProduct> {
+    data.code = await this.repository.getNextSequence('productCode')
+    return this.repository.create(data)
+  }
+
   async addQuantity (id: Types.ObjectId, quantity: number): Promise<IProduct | null> {
     const product = await this.repository.findById(id)
     if (!product) { return null }

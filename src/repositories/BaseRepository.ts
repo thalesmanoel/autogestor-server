@@ -1,5 +1,7 @@
 import { Document, Model, Types } from 'mongoose'
 
+import Counter from '../models/Counter'
+
 export default class BaseRepository<T extends Document> {
   protected model: Model<T>
 
@@ -54,5 +56,14 @@ export default class BaseRepository<T extends Document> {
       limit,
       totalPages: Math.ceil(total / limit)
     }
+  }
+
+  async getNextSequence (name: string): Promise<number> {
+    const counter = await Counter.findByIdAndUpdate(
+      name,
+      { $inc: { seq: 1 } },
+      { new: true, upsert: true }
+    )
+    return counter.seq
   }
 }
