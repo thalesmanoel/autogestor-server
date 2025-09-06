@@ -19,18 +19,52 @@ export default class BuyService extends BaseService<IBuy> {
   }
 
   async createBuy (data: IBuy) {
+  // Atualiza status da OS se houver
     if (data.serviceOrderId) {
       const serviceOrder = await this.serviceOrderRepository.findById(data.serviceOrderId)
-      if (serviceOrder) {
-        serviceOrder.status = OrderServiceStatus.PENDING_PRODUCT
-        await serviceOrder.save()
-      } else {
-        throw new Error('ID da ordem de serviço não encontrado')
+      if (!serviceOrder) throw new Error('ID da ordem de serviço não encontrado')
+      serviceOrder.status = OrderServiceStatus.PENDING_PRODUCT
+      await serviceOrder.save()
+    }
+
+    for (const item of data.products) {
+      let product = null
+
+      if (item.productId) {
+        product = await this.productService.findById(item.productId)
       }
+
+      if (!product) {
+      // Produto não existe → cria com estoque zero
+        product = await this.productService.createProduct({
+          name: item.name,
+          costUnitPrice: item.costUnitPrice,
+          salePrice: item.salePrice,
+          grossProfitMargin: item.grossProfitMargin,
+          providerId: item.providerId,
+          quantity: 0
+        })
+      } else {
+      // Produto existe → atualiza os campos da compra
+        if (item.costUnitPrice !== undefined) product.costUnitPrice = item.costUnitPrice
+        if (item.salePrice !== undefined) product.salePrice = item.salePrice
+        if (item.grossProfitMargin !== undefined) product.grossProfitMargin = item.grossProfitMargin
+
+        // Mescla providers sem duplicar
+        if (item.providerId?.length) {
+          product.providerId = Array.from(
+            new Set([...(product.providerId ?? []), ...item.providerId])
+          )
+        }
+
+        await product.save()
+      }
+
+      // Atualiza productId do item
+      item.productId = product._id as Types.ObjectId
     }
 
     const buy = await this.repository.create(data)
-
     return buy
   }
 

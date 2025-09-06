@@ -31,11 +31,12 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
 
         if (product.quantity < item.quantity) {
           const requestBuy = await Buy.findOne({
+            serviceOrderId: data._id,
             'products.productId': item.productId
           })
 
           if (requestBuy && requestBuy.status !== RequestBuyStatus.DELIVERED) {
-            data.status = OrderServiceStatus.PENDING
+            data.status = OrderServiceStatus.PENDING_PRODUCT
           }
         }
       }
