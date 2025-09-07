@@ -3,12 +3,12 @@ import mongoose, { Document, Schema } from 'mongoose'
 import OrderServiceStatus from '../enums/OrderServiceStatus'
 import { IClient } from './Client'
 import { IProductItem, ProductItemSchema } from './ProductItem'
-import { IService } from './Service'
+import { IServiceItem, ServiceItemSchema } from './ServiceItem'
 
 export interface IServiceOrder extends Document {
   code: string;
   clientId: mongoose.Types.ObjectId | IClient;
-  serviceId: mongoose.Types.ObjectId | IService;
+  services?: IServiceItem[];
   products?: IProductItem[];
   description: string;
   technicalAnalysis?: string;
@@ -28,7 +28,7 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
   {
     code: { type: String, required: true, unique: true },
     clientId: { type: Schema.Types.ObjectId, required: true },
-    serviceId: { type: Schema.Types.ObjectId, required: true },
+    services: [ServiceItemSchema],
     products: [ProductItemSchema],
     technicalAnalysis: { type: String },
     description: { type: String, required: true },

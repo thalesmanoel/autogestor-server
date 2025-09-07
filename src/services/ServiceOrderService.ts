@@ -6,7 +6,6 @@ import OrderServiceStatus from '../enums/OrderServiceStatus'
 import RequestBuyStatus from '../enums/RequestBuyStatus'
 import Buy from '../models/Buy'
 import Product from '../models/Product'
-import Service from '../models/Service'
 import { IServiceOrder } from '../models/ServiceOrder'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
@@ -24,10 +23,11 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
 
     if (data.products && data.products.length > 0) {
       for (const item of data.products) {
+        const unitPrice = item.salePrice ?? item.costUnitPrice ?? 0
+        totalProducts += unitPrice * item.quantity
+
         const product = await Product.findById(item.productId)
         if (!product) continue
-
-        totalProducts += (product.salePrice ?? product.costUnitPrice) * item.quantity
 
         if (product.quantity < item.quantity) {
           const requestBuy = await Buy.findOne({
@@ -43,10 +43,9 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     }
 
     let totalServices = 0
-    if (data.serviceId) {
-      const service = await Service.findById(data.serviceId)
-      if (service) {
-        totalServices = service.unitValue
+    if (data.services && data.services.length > 0) {
+      for (const item of data.services) {
+        totalServices += item.unitValue * item.quantity
       }
     }
 
