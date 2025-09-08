@@ -58,7 +58,28 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
 
   async createServiceOrder (data: IServiceOrder): Promise<IServiceOrder> {
     await this.calculateTotals(data)
-    return this.repository.create(data)
+
+    // Desconta o estoque dos produtos disponíveis
+    if (data.products && data.products.length > 0) {
+      for (const item of data.products) {
+        const product = await this.productService.findById(item.productId)
+        if (!product) continue
+
+        // Quantidade que pode-se realmente descontar
+        const quantityToRemove = Math.min(product.quantity, item.quantity)
+
+        if (quantityToRemove > 0) {
+          product.quantity -= quantityToRemove
+          await product.save()
+        }
+
+        item.quantity = quantityToRemove
+      }
+    }
+
+    const serviceOrder = await this.repository.create(data)
+
+    return serviceOrder
   }
 
   async changeStatus (id: Types.ObjectId, status: OrderServiceStatus): Promise<IServiceOrder | null> {

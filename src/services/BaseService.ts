@@ -37,8 +37,11 @@ export default class BaseService<T extends Document> {
     search?: string
   ) {
     const pipeline: any[] = []
-    console.log('page:', page)
-    console.log('limit:', limit)
+
+    const currentPage = page && !isNaN(page) && page > 0 ? page : 1
+    const currentLimit = limit && !isNaN(limit) && limit > 0 ? limit : 10
+    console.log('page:', currentPage)
+    console.log('limit:', currentLimit)
     console.log('date:', date)
     console.log('identifier:', identifier)
     console.log('search:', search)
@@ -68,6 +71,6 @@ export default class BaseService<T extends Document> {
 
     console.log(pipeline)
 
-    return this.repository.aggregatePaginate(pipeline, page, limit)
+    return this.repository.aggregatePaginate(pipeline, currentPage, currentLimit)
   }
 }

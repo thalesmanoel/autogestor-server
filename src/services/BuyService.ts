@@ -41,7 +41,7 @@ export default class BuyService extends BaseService<IBuy> {
           costUnitPrice: item.costUnitPrice,
           salePrice: item.salePrice,
           grossProfitMargin: item.grossProfitMargin,
-          providerId: item.providerId,
+          providerIds: item.providerIds,
           quantity: 0
         })
       } else {
@@ -51,9 +51,9 @@ export default class BuyService extends BaseService<IBuy> {
         if (item.grossProfitMargin !== undefined) product.grossProfitMargin = item.grossProfitMargin
 
         // Mescla providers sem duplicar
-        if (item.providerId?.length) {
-          product.providerId = Array.from(
-            new Set([...(product.providerId ?? []), ...item.providerId])
+        if (item.providerIds?.length) {
+          product.providerIds = Array.from(
+            new Set([...(product.providerIds ?? []), ...item.providerIds])
           )
         }
 

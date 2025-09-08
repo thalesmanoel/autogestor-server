@@ -7,7 +7,7 @@ export interface IProduct extends Document {
     costUnitPrice: number;
     salePrice?: number;
     grossProfitMargin?: number;
-    providerId?: mongoose.Types.ObjectId[];
+    providerIds?: mongoose.Types.ObjectId[];
 }
 
 const ProductSchema = new Schema<IProduct>(
@@ -15,7 +15,7 @@ const ProductSchema = new Schema<IProduct>(
     code: { type: Number, unique: true },
     name: { type: String, required: true },
     quantity: { type: Number, required: true },
-    providerId: { type: [mongoose.Schema.Types.ObjectId] },
+    providerIds: { type: [mongoose.Schema.Types.ObjectId] },
     costUnitPrice: { type: Number, required: true },
     salePrice: { type: Number },
     grossProfitMargin: { type: Number }
