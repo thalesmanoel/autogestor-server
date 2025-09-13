@@ -1,5 +1,6 @@
 import 'dotenv/config'
 
+import cors from 'cors'
 import express from 'express'
 
 import Database from './config/Database'
@@ -7,6 +8,14 @@ import routes from './routes'
 
 const app = express()
 app.use(express.json())
+
+app.use(
+  cors({
+    origin: process.env.FRONTEND_LOCAL,
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  })
+)
 
 Database.connect()
 
