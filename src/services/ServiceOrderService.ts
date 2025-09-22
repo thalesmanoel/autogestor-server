@@ -3,9 +3,6 @@ import { Types } from 'mongoose'
 import PDFDocument from 'pdfkit'
 
 import OrderServiceStatus from '../enums/OrderServiceStatus'
-import RequestBuyStatus from '../enums/RequestBuyStatus'
-import Buy from '../models/Buy'
-import Product from '../models/Product'
 import { IServiceOrder } from '../models/ServiceOrder'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
@@ -13,9 +10,11 @@ import ProductService from './ProductService'
 
 export default class ServiceOrderService extends BaseService<IServiceOrder> {
   private productService: ProductService
+  private serviceOrderRepository: ServiceOrderRepository
   constructor () {
     super(new ServiceOrderRepository())
     this.productService = new ProductService()
+    this.serviceOrderRepository = new ServiceOrderRepository()
   }
 
   async calculateTotals (data: IServiceOrder): Promise<IServiceOrder> {
@@ -23,22 +22,10 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
 
     if (data.products && data.products.length > 0) {
       for (const item of data.products) {
+        if (!item.productId) continue // só calcula quando já tem produto real
+
         const unitPrice = item.salePrice ?? item.costUnitPrice ?? 0
         totalProducts += unitPrice * item.quantity
-
-        const product = await Product.findById(item.productId)
-        if (!product) continue
-
-        if (product.quantity < item.quantity) {
-          const requestBuy = await Buy.findOne({
-            serviceOrderId: data._id,
-            'products.productId': item.productId
-          })
-
-          if (requestBuy && requestBuy.status !== RequestBuyStatus.DELIVERED) {
-            data.status = OrderServiceStatus.PENDING_PRODUCT
-          }
-        }
       }
     }
 
@@ -62,7 +49,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     // Desconta o estoque dos produtos disponíveis
     if (data.products && data.products.length > 0) {
       for (const item of data.products) {
-        const product = await this.productService.findById(item.productId)
+        const product = await this.productService.findById(item.productId as Types.ObjectId)
         if (!product) continue
 
         // Quantidade que pode-se realmente descontar
@@ -77,19 +64,19 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       }
     }
 
-    const serviceOrder = await this.repository.create(data)
+    const serviceOrder = await this.serviceOrderRepository.create(data)
 
     return serviceOrder
   }
 
   async changeStatus (id: Types.ObjectId, status: OrderServiceStatus): Promise<IServiceOrder | null> {
-    const serviceOrder = await this.repository.findById(id)
+    const serviceOrder = await this.serviceOrderRepository.findById(id)
     if (!serviceOrder) return null
 
     // Cancelamento da OS → devolve produtos ao estoque
     if (status === OrderServiceStatus.CANCELED) {
       for (const item of serviceOrder.products ?? []) {
-        const product = await this.productService.findById(item.productId)
+        const product = await this.productService.findById(new Types.ObjectId(item.productId))
         if (!product) continue
 
         product.quantity += item.quantity
@@ -116,7 +103,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
 
   // Atualiza uma ordem de serviço e recalcula os totais
   async updateServiceOrder (id: Types.ObjectId, data: Partial<IServiceOrder>): Promise<IServiceOrder | null> {
-    const existingOrder = await this.repository.findById(id)
+    const existingOrder = await this.serviceOrderRepository.findById(id)
     if (!existingOrder) return null
 
     const mergedData = { ...existingOrder.toObject(), ...data }
@@ -124,11 +111,11 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     const totals = await this.calculateTotals(mergedData as IServiceOrder)
     Object.assign(data, totals)
 
-    return this.repository.update(id, data)
+    return this.serviceOrderRepository.update(id, data)
   }
 
   async exportPdf (serviceOrderId: Types.ObjectId, res: Response) {
-    const order = await this.repository.findById(serviceOrderId)
+    const order = await this.serviceOrderRepository.findById(serviceOrderId)
       .populate('clientId')
       .populate('serviceId')
       .populate('products.productId')

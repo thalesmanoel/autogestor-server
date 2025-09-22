@@ -8,6 +8,7 @@ export interface IUser extends Document {
   password: string;
   cellphone: string;
   role: Role;
+  manager?: boolean;
 }
 
 const UserSchema = new Schema<IUser>(

@@ -40,11 +40,6 @@ export default class BaseService<T extends Document> {
 
     const currentPage = page && !isNaN(page) && page > 0 ? page : 1
     const currentLimit = limit && !isNaN(limit) && limit > 0 ? limit : 10
-    console.log('page:', currentPage)
-    console.log('limit:', currentLimit)
-    console.log('date:', date)
-    console.log('identifier:', identifier)
-    console.log('search:', search)
 
     if (date) {
       const start = new Date(date.getFullYear(), date.getMonth(), 1)
