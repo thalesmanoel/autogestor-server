@@ -7,6 +7,9 @@ export interface IBuy extends Document {
   name: string;
   products: IProductItem[];
   authorized?: boolean;
+  approvedBy?: Types.ObjectId;
+  rejectedBy?: Types.ObjectId;
+  deliveredDate?: Date;
   requestDate?: Date;
   serviceOrderId?: Types.ObjectId;
   status?: RequestBuyStatus;
@@ -19,6 +22,9 @@ const BuySchema = new Schema<IBuy>(
     name: { type: String, required: true },
     products: [ProductItemSchema],
     authorized: { type: Boolean, default: false },
+    approvedBy: { type: Schema.Types.ObjectId },
+    rejectedBy: { type: Schema.Types.ObjectId },
+    deliveredDate: { type: Date },
     requestDate: { type: Date, default: Date.now },
     serviceOrderId: { type: Schema.Types.ObjectId },
     status: { type: String, enum: Object.values(RequestBuyStatus) },

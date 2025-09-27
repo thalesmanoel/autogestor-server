@@ -65,7 +65,9 @@ export default class BuyController {
       const { id } = req.params
       const { authorization } = req.body
 
-      const buy = await this.buyService.authorize(new Types.ObjectId(id), authorization)
+      const changedAuthorizationByUser = req.user?.id
+
+      const buy = await this.buyService.authorize(new Types.ObjectId(id), authorization, new Types.ObjectId(changedAuthorizationByUser))
 
       if (buy == null) { return res.status(404).json({ message: 'Solicitação de compra não encontrada' }) }
       res.json(buy)
