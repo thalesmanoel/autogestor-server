@@ -10,9 +10,19 @@ export default class DashboardController {
     this.dashboardService = new DashboardService()
   }
 
-  getBillingDatas = async (_req: Request, res: Response, next: NextFunction) => {
+  getBillingDatas = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const dashboards = await this.dashboardService.getBillingDatas()
+      const { date } = req.query
+
+      let dateVerified: Date | undefined
+
+      if (date && typeof date === 'string') {
+        const [year, month] = date.split('-').map(Number)
+        dateVerified = new Date(year, month - 1, 1)
+      }
+
+      const dashboards = await this.dashboardService.getBillingDatas(dateVerified)
+
       res.json(dashboards)
     } catch (error) {
       next(error)
