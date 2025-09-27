@@ -4,8 +4,9 @@ export interface IProductItem {
   productId?: Types.ObjectId;
   code?: number;
   name: string;
-  quantityToServiceOrder?: number;
-  quantityToStock?: number;
+  quantity?: number; // quantidade efetiva utilizada na OS
+  quantityToServiceOrder?: number; // quantidade a ser adicionada na OS
+  quantityToStock?: number; // quantidade a ser adicionada no estoque
   totalQuantity?: number;
   costUnitPrice?: number;
   salePrice?: number;
@@ -18,9 +19,10 @@ export const ProductItemSchema = new Schema<IProductItem>(
     productId: { type: Schema.Types.ObjectId },
     code: { type: Number },
     name: { type: String, required: true },
-    quantityToServiceOrder: { type: Number, required: true },
-    quantityToStock: { type: Number, required: true },
-    totalQuantity: { type: Number, required: true },
+    quantity: { type: Number },
+    quantityToServiceOrder: { type: Number },
+    quantityToStock: { type: Number },
+    totalQuantity: { type: Number },
     costUnitPrice: { type: Number },
     salePrice: { type: Number },
     grossProfitMargin: { type: Number },

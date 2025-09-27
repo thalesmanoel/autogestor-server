@@ -1,6 +1,8 @@
-import { Document, Model, Types } from 'mongoose'
+import { Document, HydratedDocument, Model, Types } from 'mongoose'
 
 import Counter from '../models/Counter'
+
+export type BaseDoc<T> = HydratedDocument<T>
 
 export default class BaseRepository<T extends Document> {
   protected model: Model<T>
@@ -9,8 +11,8 @@ export default class BaseRepository<T extends Document> {
     this.model = model
   }
 
-  async create (data: Partial<T>): Promise<T> {
-    return this.model.create(data)
+  async create (data: Partial<T>): Promise<BaseDoc<T>> {
+    return this.model.create(data) as Promise<BaseDoc<T>>
   }
 
   async findAll (): Promise<T[]> {

@@ -7,6 +7,7 @@ import BuyRepository from '../repositories/BuyRepository'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
 import ProductService from './ProductService'
+import ServiceOrderService from './ServiceOrderService'
 
 export default class BuyService extends BaseService<IBuy> {
   private productService: ProductService
@@ -42,7 +43,9 @@ export default class BuyService extends BaseService<IBuy> {
 
     const previousStatus = buy.status
     Object.assign(buy, data)
-    await this.repository.update(id, buy)
+
+    // salva as alterações direto no documento, em vez de chamar update
+    await buy.save()
 
     let serviceOrder = null
     if (buy.serviceOrderId) {
@@ -50,50 +53,60 @@ export default class BuyService extends BaseService<IBuy> {
       if (!serviceOrder) throw new Error('ID da ordem de serviço não encontrado')
     }
 
-    // Quando a compra é entregue
     if (previousStatus !== RequestBuyStatus.DELIVERED &&
       buy.status === RequestBuyStatus.DELIVERED) {
       for (const item of buy.products) {
-        const product = await this.productService.findById(item.productId)
-        if (!product) continue
+        let product = item.productId
+          ? await this.productService.findById(item.productId as Types.ObjectId)
+          : null
 
-        const previousStock = product.quantity
-
-        // Adiciona ao estoque a quantidade entregue
-        product.quantity += item.quantity
-
-        // Se houver OS vinculada, retira do estoque o necessário
-        if (serviceOrder) {
-          const serviceOrderItem = serviceOrder.products?.find(p =>
-            p.productId.equals(item.productId)
-          )
-
-          if (serviceOrderItem) {
-          // Quantidade que realmente falta para atender a OS
-            const quantityNeededForOS = Math.max(serviceOrderItem.quantity - previousStock, 0)
-            // Só desconta o que realmente será usado da compra
-            const quantityForOS = Math.min(item.quantity, quantityNeededForOS)
-
-            product.quantity -= quantityForOS
+        if (!product) {
+          product = await this.productService.createProduct({
+            name: item.name,
+            quantity: 0,
+            costUnitPrice: item.costUnitPrice ?? 0,
+            salePrice: item.salePrice,
+            grossProfitMargin: item.grossProfitMargin,
+            providerIds: item.providerIds
+          })
+        } else {
+          if (item.costUnitPrice !== undefined) product.costUnitPrice = item.costUnitPrice
+          if (item.salePrice !== undefined) product.salePrice = item.salePrice
+          if (item.grossProfitMargin !== undefined) product.grossProfitMargin = item.grossProfitMargin
+          if (item.providerIds?.length) {
+            product.providerIds = Array.from(new Set([...(product.providerIds ?? []), ...item.providerIds]))
           }
         }
 
-        await product.save()
+        if (product) {
+          const addQty = item.quantityToStock ?? 0
+          product.quantity += addQty
+          await product.save()
+        }
+
+        if (serviceOrder && item.quantityToServiceOrder && item.quantityToServiceOrder > 0) {
+          const existingItem = serviceOrder.products?.find(p => p.productId?.equals(product._id))
+          if (existingItem) {
+            existingItem.quantity = (existingItem.quantity ?? 0) + item.quantityToServiceOrder
+          } else {
+            serviceOrder.products?.push({
+              productId: product._id,
+              code: product.code,
+              name: product.name,
+              quantity: item.quantityToServiceOrder,
+              costUnitPrice: product.costUnitPrice,
+              salePrice: product.salePrice,
+              grossProfitMargin: product.grossProfitMargin,
+              providerIds: product.providerIds
+            })
+          }
+        }
       }
 
-      // Atualiza status da OS se existir
       if (serviceOrder && serviceOrder.status !== OrderServiceStatus.CANCELED) {
+        const totals = await new ServiceOrderService().calculateTotals(serviceOrder)
+        Object.assign(serviceOrder, totals)
         serviceOrder.status = OrderServiceStatus.PENDING
-        await serviceOrder.save()
-      }
-    }
-    // Status PENDING ou APPROVED → OS fica em PENDING_PRODUCT
-    else if (
-      buy.status === RequestBuyStatus.PENDING ||
-    buy.status === RequestBuyStatus.APPROVED
-    ) {
-      if (serviceOrder && serviceOrder.status !== OrderServiceStatus.CANCELED) {
-        serviceOrder.status = OrderServiceStatus.PENDING_PRODUCT
         await serviceOrder.save()
       }
     }

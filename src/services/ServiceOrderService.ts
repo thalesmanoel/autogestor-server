@@ -1,6 +1,4 @@
-import { Response } from 'express'
 import { Types } from 'mongoose'
-import PDFDocument from 'pdfkit'
 
 import OrderServiceStatus from '../enums/OrderServiceStatus'
 import { IServiceOrder } from '../models/ServiceOrder'
@@ -25,7 +23,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
         if (!item.productId) continue // só calcula quando já tem produto real
 
         const unitPrice = item.salePrice ?? item.costUnitPrice ?? 0
-        totalProducts += unitPrice * item.quantity
+        totalProducts += unitPrice * (item.quantity ?? 0)
       }
     }
 
@@ -51,16 +49,14 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       for (const item of data.products) {
         const product = await this.productService.findById(item.productId as Types.ObjectId)
         if (!product) continue
+        const quantity = item.quantity ?? 0
 
-        // Quantidade que pode-se realmente descontar
-        const quantityToRemove = Math.min(product.quantity, item.quantity)
-
-        if (quantityToRemove > 0) {
-          product.quantity -= quantityToRemove
-          await product.save()
+        if (quantity > product.quantity) {
+          throw new Error(`Estoque insuficiente para o produto ${product.name}. Em estoque: ${product.quantity}, solicitado: ${quantity}`)
         }
 
-        item.quantity = quantityToRemove
+        product.quantity -= quantity
+        await product.save()
       }
     }
 
@@ -79,7 +75,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
         const product = await this.productService.findById(new Types.ObjectId(item.productId))
         if (!product) continue
 
-        product.quantity += item.quantity
+        product.quantity += item.quantity ?? 0
         await product.save()
       }
 
@@ -114,71 +110,71 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     return this.serviceOrderRepository.update(id, data)
   }
 
-  async exportPdf (serviceOrderId: Types.ObjectId, res: Response) {
-    const order = await this.serviceOrderRepository.findById(serviceOrderId)
-      .populate('clientId')
-      .populate('serviceId')
-      .populate('products.productId')
-      .lean()
-      .exec()
+  // async exportPdf (serviceOrderId: Types.ObjectId, res: Response) {
+  //   const order = await this.serviceOrderRepository.findById(serviceOrderId)
+  //     .populate('clientId')
+  //     .populate('serviceId')
+  //     .populate('products.productId')
+  //     .lean()
+  //     .exec()
 
-    if (!order) {
-      throw new Error('Ordem de serviço não encontrada')
-    }
+  //   if (!order) {
+  //     throw new Error('Ordem de serviço não encontrada')
+  //   }
 
-    // Criar o documento PDF
-    const doc = new PDFDocument({ margin: 40 })
-    res.setHeader('Content-Type', 'application/pdf')
-    res.setHeader('Content-Disposition', `inline; filename=OS-${order.code}.pdf`)
-    doc.pipe(res)
+  //   // Criar o documento PDF
+  //   const doc = new PDFDocument({ margin: 40 })
+  //   res.setHeader('Content-Type', 'application/pdf')
+  //   res.setHeader('Content-Disposition', `inline; filename=OS-${order.code}.pdf`)
+  //   doc.pipe(res)
 
-    // Título
-    doc.fontSize(18).text(`Ordem de Serviço - ${order.code}`, { align: 'center' })
-    doc.moveDown()
+  //   // Título
+  //   doc.fontSize(18).text(`Ordem de Serviço - ${order.code}`, { align: 'center' })
+  //   doc.moveDown()
 
-    // Cliente
-    if (order.clientId && typeof order.clientId === 'object' && 'name' in order.clientId) {
-      doc.text(`Cliente: ${(order.clientId as any).name}`)
-    } else {
-      doc.text('Cliente: -')
-    }
+  //   // Cliente
+  //   if (order.clientId && typeof order.clientId === 'object' && 'name' in order.clientId) {
+  //     doc.text(`Cliente: ${(order.clientId as any).name}`)
+  //   } else {
+  //     doc.text('Cliente: -')
+  //   }
 
-    // Serviço
-    if (order.serviceId && typeof order.serviceId === 'object' && 'name' in order.serviceId) {
-      doc.text(`Serviço: ${(order.serviceId as any).name}`)
-    } else {
-      doc.text('Serviço: -')
-    }
+  //   // Serviço
+  //   if (order.serviceId && typeof order.serviceId === 'object' && 'name' in order.serviceId) {
+  //     doc.text(`Serviço: ${(order.serviceId as any).name}`)
+  //   } else {
+  //     doc.text('Serviço: -')
+  //   }
 
-    // Dados principais
-    doc.text(`Descrição: ${order.description}`)
-    doc.text(`Status: ${order.status}`)
-    doc.text(`Entrada: ${order.entryDate ? new Date(order.entryDate).toLocaleDateString() : '-'}`)
-    doc.text(`Prazo: ${order.deadline ? new Date(order.deadline).toLocaleDateString() : '-'}`)
-    doc.moveDown()
+  //   // Dados principais
+  //   doc.text(`Descrição: ${order.description}`)
+  //   doc.text(`Status: ${order.status}`)
+  //   doc.text(`Entrada: ${order.entryDate ? new Date(order.entryDate).toLocaleDateString() : '-'}`)
+  //   doc.text(`Prazo: ${order.deadline ? new Date(order.deadline).toLocaleDateString() : '-'}`)
+  //   doc.moveDown()
 
-    // Produtos (se houver)
-    if (order.products && order.products.length > 0) {
-      doc.fontSize(14).text('Produtos:', { underline: true })
-      doc.moveDown(0.5)
+  //   // Produtos (se houver)
+  //   if (order.products && order.products.length > 0) {
+  //     doc.fontSize(14).text('Produtos:', { underline: true })
+  //     doc.moveDown(0.5)
 
-      order.products.forEach((p: any, i: number) => {
-        doc.fontSize(12).text(
-          `${i + 1}. ${p.productId?.name || '-'} | Qtde: ${p.quantity} | Valor: R$ ${
-            p.salePrice?.toFixed(2) || '0.00'
-          }`
-        )
-      })
-      doc.moveDown()
-    }
+  //     order.products.forEach((p: any, i: number) => {
+  //       doc.fontSize(12).text(
+  //         `${i + 1}. ${p.productId?.name || '-'} | Qtde: ${p.quantity} | Valor: R$ ${
+  //           p.salePrice?.toFixed(2) || '0.00'
+  //         }`
+  //       )
+  //     })
+  //     doc.moveDown()
+  //   }
 
-    // Totais
-    doc.fontSize(12).text(`Total Produtos: R$ ${order.totalValueProducts?.toFixed(2) || '0.00'}`)
-    doc.text(`Total Serviços: R$ ${order.totalValueServices?.toFixed(2) || '0.00'}`)
-    doc.text(`Total Geral: R$ ${order.totalValueGeneral?.toFixed(2) || '0.00'}`)
-    doc.text(`Forma de pagamento: ${order.paymentType || '-'}`)
-    doc.text(`Pago: ${order.paid ? 'Sim' : 'Não'}`)
+  //   // Totais
+  //   doc.fontSize(12).text(`Total Produtos: R$ ${order.totalValueProducts?.toFixed(2) || '0.00'}`)
+  //   doc.text(`Total Serviços: R$ ${order.totalValueServices?.toFixed(2) || '0.00'}`)
+  //   doc.text(`Total Geral: R$ ${order.totalValueGeneral?.toFixed(2) || '0.00'}`)
+  //   doc.text(`Forma de pagamento: ${order.paymentType || '-'}`)
+  //   doc.text(`Pago: ${order.paid ? 'Sim' : 'Não'}`)
 
-    doc.end()
-  }
+  //   doc.end()
+  // }
 }
