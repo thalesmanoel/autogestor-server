@@ -10,7 +10,7 @@ export default class DashboardController {
     this.dashboardService = new DashboardService()
   }
 
-  getDashboard = async (req: Request, res: Response, next: NextFunction) => {
+  getDashboardMonthly = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { date } = req.query
 
@@ -19,6 +19,20 @@ export default class DashboardController {
       const dashboards = await this.dashboardService.getDashboardDatas(startDate, endDate)
 
       res.json(dashboards)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  getAnnualBilling = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { year } = req.query
+      if (year && isNaN(Number(year))) {
+        return res.status(400).json({ message: 'O ano deve ser um número' })
+      }
+      const annualBilling = await this.dashboardService.getLastMonthsBilling(Number(year) || undefined)
+
+      res.json(annualBilling)
     } catch (error) {
       next(error)
     }

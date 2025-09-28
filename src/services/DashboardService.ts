@@ -148,4 +148,37 @@ export default class DashboardService extends BaseService<IDashboard> {
       true
     )
   }
+
+  async getLastMonthsBilling (year?: number) {
+    const now = new Date()
+    const start = new Date(now.getFullYear(), now.getMonth() - 11, 1)
+    const matchStage: any = {}
+
+    if (year) {
+      matchStage.year = year
+    } else {
+      matchStage.year = { $gte: start.getFullYear() }
+      matchStage.$expr = {
+        $gte: [
+          { $dateFromParts: { year: '$year', month: '$month', day: 1 } },
+          start
+        ]
+      }
+    }
+
+    const result = await this.dashboardRepository.aggregateMany([
+      { $match: matchStage },
+      {
+        $project: {
+          _id: 0,
+          year: 1,
+          month: 1,
+          totalBilling: '$billingTotalValue'
+        }
+      },
+      { $sort: { year: 1, month: 1 } }
+    ])
+
+    return result
+  }
 }
