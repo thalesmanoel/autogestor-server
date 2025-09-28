@@ -1,4 +1,4 @@
-import { Document, HydratedDocument, Model, Types } from 'mongoose'
+import { Document, FilterQuery, HydratedDocument, Model, Types } from 'mongoose'
 
 import Counter from '../models/Counter'
 
@@ -21,6 +21,10 @@ export default class BaseRepository<T extends Document> {
 
   findById (id: Types.ObjectId) {
     return this.model.findById(id)
+  }
+
+  async updateOne (filter: FilterQuery<T>, data: Partial<T>, upsert = false): Promise<T | null> {
+    return this.model.findOneAndUpdate(filter, data, { new: true, upsert })
   }
 
   async update (id: Types.ObjectId, data: Partial<T>): Promise<T | null> {

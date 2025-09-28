@@ -131,4 +131,35 @@ export default class DashboardService extends BaseService<IDashboard> {
     const result = await this.clientRepository.aggregateMany(pipeline)
     return result.length > 0 ? result[0].quantityNewClients : 0
   }
+
+  async updateMonthlyDashboard (year: number, month: number) {
+    const startDate = new Date(year, month - 1, 1)
+    const endDate = new Date(year, month, 0, 23, 59, 59)
+
+    const billingTotals = await this.getBillingServiceOrdersTotalValue([
+      { $match: { createdAt: { $gte: startDate, $lte: endDate } } }
+    ])
+
+    const totalCost = await this.getCostRequestBuys(startDate, endDate)
+
+    const grossProfit = billingTotals.totalGeneral - totalCost
+
+    const quantityNewClients = await this.getQuantityNewClients(startDate, endDate)
+
+    await this.dashboardRepository.updateOne(
+      { year, month },
+      {
+        year,
+        month,
+        billingTotalValue: billingTotals.totalGeneral,
+        servicesTotalValue: billingTotals.totalServices,
+        productsTotalValue: billingTotals.totalProducts,
+        costsTotalValue: totalCost,
+        grossProfitTotalValue: grossProfit,
+        quantityServiceOrdersCompleted: billingTotals.countOrders,
+        quantityNewClients
+      },
+      true
+    )
+  }
 }
