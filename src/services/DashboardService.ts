@@ -1,4 +1,6 @@
+import RequestBuyStatus from '../enums/RequestBuyStatus'
 import { IDashboard } from '../models/Dashboard'
+import BuyRepository from '../repositories/BuyRepository'
 import DashboardRepository from '../repositories/DashboardRepository'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
@@ -6,22 +8,21 @@ import BaseService from './BaseService'
 export default class DashboardService extends BaseService<IDashboard> {
   private dashboardRepository: DashboardRepository
   private serviceOrderRepository: ServiceOrderRepository
+  private buyRepository: BuyRepository
   constructor () {
     super(new DashboardRepository())
     this.dashboardRepository = new DashboardRepository()
     this.serviceOrderRepository = new ServiceOrderRepository()
+    this.buyRepository = new BuyRepository()
   }
 
-  async getBillingDatas (date: Date | undefined) {
+  async getBillingDatas (startDate?: Date, endDate?: Date) {
     const pipeline: any[] = []
 
-    if (date) {
-      const start = new Date(date.getFullYear(), date.getMonth(), 1)
-      const end = new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59)
-
+    if (startDate && endDate) {
       pipeline.push({
         $match: {
-          createdAt: { $gte: start, $lte: end }
+          createdAt: { $gte: startDate, $lte: endDate }
         }
       })
     }
@@ -33,22 +34,73 @@ export default class DashboardService extends BaseService<IDashboard> {
     }
   }
 
-  async getBillingServiceOrdersTotalValue (pipeline: any[]): Promise<number> {
+  async getBillingServiceOrdersTotalValue (pipeline: any[]) {
     const result = await this.serviceOrderRepository.aggregateMany([
       ...pipeline,
+      { $match: { paid: true } },
       {
         $project: {
-          totalValueGeneral: 1
+          totalValueGeneral: 1,
+          totalValueServices: 1,
+          totalValueProducts: 1
         }
       },
       {
         $group: {
           _id: null,
-          total: { $sum: '$totalValueGeneral' }
+          totalGeneral: { $sum: '$totalValueGeneral' },
+          totalServices: { $sum: '$totalValueServices' },
+          totalProducts: { $sum: '$totalValueProducts' }
         }
       }
     ])
 
-    return result.length > 0 ? result[0].total : 0
+    return result.length > 0
+      ? {
+        totalGeneral: result[0].totalGeneral,
+        totalServices: result[0].totalServices,
+        totalProducts: result[0].totalProducts
+      }
+      : { totalGeneral: 0, totalServices: 0, totalProducts: 0 }
+  }
+
+  async getCostRequestBuys (startDate?: Date, endDate?: Date): Promise<number> {
+    const pipeline: any[] = []
+
+    if (startDate && endDate) {
+      pipeline.push({
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate }
+        }
+      })
+    }
+
+    const result = await this.buyRepository.aggregateMany([
+      ...pipeline,
+      {
+        $match: {
+          status: {
+            $in: [
+              RequestBuyStatus.DELIVERED,
+              RequestBuyStatus.PURCHASED
+            ]
+          }
+        }
+      },
+      { $unwind: '$products' },
+      {
+        $project: {
+          cost: { $multiply: ['$products.costUnitPrice', '$products.totalQuantity'] }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          totalCost: { $sum: '$cost' }
+        }
+      }
+    ])
+
+    return result.length > 0 ? result[0].totalCost : 0
   }
 }

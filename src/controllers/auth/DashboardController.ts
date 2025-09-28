@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { Types } from 'mongoose'
 
 import DashboardService from '../../services/DashboardService'
+import { convertDatesToYearAndMonth } from '../../utils/ConvertDatesToYearAndMonth'
 
 export default class DashboardController {
   private dashboardService: DashboardService
@@ -14,16 +15,25 @@ export default class DashboardController {
     try {
       const { date } = req.query
 
-      let dateVerified: Date | undefined
+      const { startDate, endDate } = await convertDatesToYearAndMonth(date?.toString())
 
-      if (date && typeof date === 'string') {
-        const [year, month] = date.split('-').map(Number)
-        dateVerified = new Date(year, month - 1, 1)
-      }
-
-      const dashboards = await this.dashboardService.getBillingDatas(dateVerified)
+      const dashboards = await this.dashboardService.getBillingDatas(startDate, endDate)
 
       res.json(dashboards)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  getCostRequestBuys = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { date } = req.query
+
+      const { startDate, endDate } = await convertDatesToYearAndMonth(date?.toString())
+
+      const costs = await this.dashboardService.getCostRequestBuys(startDate, endDate)
+
+      res.json({ costProducts: costs })
     } catch (error) {
       next(error)
     }
