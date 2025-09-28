@@ -22,6 +22,7 @@ export interface IServiceOrder extends Document {
   totalValueGeneral?: number;
   paymentType?: string;
   paid: boolean;
+  paymentDate?: Date;
 }
 
 const ServiceOrderSchema = new Schema<IServiceOrder>(

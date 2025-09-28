@@ -22,6 +22,6 @@ router.use('/buys', BuyRoutes)
 router.use('/mechanics', MechanicRoutes)
 router.use('/service-orders', ServiceOrderRoutes)
 router.use('/providers', ProviderRoutes)
-router.use('/dashboard', DashboardRoutes)
+router.use('/dashboards', DashboardRoutes)
 
 export default router

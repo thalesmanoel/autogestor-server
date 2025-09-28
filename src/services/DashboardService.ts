@@ -1,5 +1,6 @@
 import RequestBuyStatus from '../enums/RequestBuyStatus'
 import { IDashboard } from '../models/Dashboard'
+import { IServiceOrder } from '../models/ServiceOrder'
 import BuyRepository from '../repositories/BuyRepository'
 import ClientRepository from '../repositories/ClientRepository'
 import DashboardRepository from '../repositories/DashboardRepository'
@@ -132,32 +133,17 @@ export default class DashboardService extends BaseService<IDashboard> {
     return result.length > 0 ? result[0].quantityNewClients : 0
   }
 
-  async updateMonthlyDashboard (year: number, month: number) {
-    const startDate = new Date(year, month - 1, 1)
-    const endDate = new Date(year, month, 0, 23, 59, 59)
+  async incrementMonthlyDashboard (order: IServiceOrder) {
+    if (!order.paid || !order.paymentDate) return
 
-    const billingTotals = await this.getBillingServiceOrdersTotalValue([
-      { $match: { createdAt: { $gte: startDate, $lte: endDate } } }
-    ])
+    const year = order.paymentDate.getFullYear()
+    const month = order.paymentDate.getMonth() + 1
 
-    const totalCost = await this.getCostRequestBuys(startDate, endDate)
-
-    const grossProfit = billingTotals.totalGeneral - totalCost
-
-    const quantityNewClients = await this.getQuantityNewClients(startDate, endDate)
-
-    await this.dashboardRepository.updateOne(
+    await this.dashboardRepository.updateWithOperators(
       { year, month },
       {
-        year,
-        month,
-        billingTotalValue: billingTotals.totalGeneral,
-        servicesTotalValue: billingTotals.totalServices,
-        productsTotalValue: billingTotals.totalProducts,
-        costsTotalValue: totalCost,
-        grossProfitTotalValue: grossProfit,
-        quantityServiceOrdersCompleted: billingTotals.countOrders,
-        quantityNewClients
+        $inc: { billingTotalValue: order.totalValueGeneral || 0 },
+        $setOnInsert: { year, month }
       },
       true
     )

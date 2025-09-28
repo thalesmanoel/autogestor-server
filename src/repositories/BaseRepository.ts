@@ -27,6 +27,10 @@ export default class BaseRepository<T extends Document> {
     return this.model.findOneAndUpdate(filter, data, { new: true, upsert })
   }
 
+  async updateWithOperators (filter: FilterQuery<T>, update: any, upsert = false) {
+    return this.model.findOneAndUpdate(filter, update, { upsert, new: true })
+  }
+
   async update (id: Types.ObjectId, data: Partial<T>): Promise<T | null> {
     return this.model.findByIdAndUpdate(id, data, { new: true })
   }

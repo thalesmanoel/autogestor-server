@@ -4,15 +4,18 @@ import OrderServiceStatus from '../enums/OrderServiceStatus'
 import { IServiceOrder } from '../models/ServiceOrder'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
+import DashboardService from './DashboardService'
 import ProductService from './ProductService'
 
 export default class ServiceOrderService extends BaseService<IServiceOrder> {
   private productService: ProductService
   private serviceOrderRepository: ServiceOrderRepository
+  private dashboardService: DashboardService
   constructor () {
     super(new ServiceOrderRepository())
     this.productService = new ProductService()
     this.serviceOrderRepository = new ServiceOrderRepository()
+    this.dashboardService = new DashboardService()
   }
 
   async calculateTotals (data: IServiceOrder): Promise<IServiceOrder> {
@@ -69,7 +72,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     const serviceOrder = await this.serviceOrderRepository.findById(id)
     if (!serviceOrder) return null
 
-    // Cancelamento da OS → devolve produtos ao estoque
+    // Cancelamento da OS -> devolve produtos ao estoque
     if (status === OrderServiceStatus.CANCELED) {
       for (const item of serviceOrder.products ?? []) {
         const product = await this.productService.findById(new Types.ObjectId(item.productId))
@@ -87,6 +90,9 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     if (status === OrderServiceStatus.COMPLETED) {
       serviceOrder.status = OrderServiceStatus.COMPLETED
       serviceOrder.completionDate = new Date()
+      if (!serviceOrder.paid) {
+        this.updatePaidStatus(id, true)
+      }
       await serviceOrder.save()
       return serviceOrder
     }
@@ -108,6 +114,20 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     Object.assign(data, totals)
 
     return this.serviceOrderRepository.update(id, data)
+  }
+
+  async updatePaidStatus (serviceOrderId: Types.ObjectId, paid: boolean, paymentType?: string) {
+    const order = await this.serviceOrderRepository.findById(serviceOrderId)
+    if (!order) throw new Error('Ordem de serviço não encontrada')
+
+    order.paid = paid
+    order.paymentDate = paid ? new Date() : undefined
+    order.paymentType = paymentType || 'não informado'
+    await order.save()
+
+    if (paid) {
+      await this.dashboardService.incrementMonthlyDashboard(order)
+    }
   }
 
   // async exportPdf (serviceOrderId: Types.ObjectId, res: Response) {

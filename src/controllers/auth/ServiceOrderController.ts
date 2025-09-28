@@ -51,6 +51,18 @@ export default class ServiceOrderController {
     }
   }
 
+  updatePaidStatus = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params
+      const { paid, paymentType } = req.body
+
+      await this.serviceOrderService.updatePaidStatus(new Types.ObjectId(id), paid, paymentType)
+      res.status(200).json({ message: 'Status de pagamento atualizado com sucesso' })
+    } catch (error) {
+      next(error)
+    }
+  }
+
   changeStatus = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params
@@ -75,12 +87,12 @@ export default class ServiceOrderController {
     }
   }
 
-  exportPdf = async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params
-      await this.serviceOrderService.exportPdf(new Types.ObjectId(id), res)
-    } catch (error: any) {
-      res.status(500).json({ error: error.message })
-    }
-  }
+  // exportPdf = async (req: Request, res: Response) => {
+  //   try {
+  //     const { id } = req.params
+  //     await this.serviceOrderService.exportPdf(new Types.ObjectId(id), res)
+  //   } catch (error: any) {
+  //     res.status(500).json({ error: error.message })
+  //   }
+  // }
 }
