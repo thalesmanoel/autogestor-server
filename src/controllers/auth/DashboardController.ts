@@ -11,29 +11,15 @@ export default class DashboardController {
     this.dashboardService = new DashboardService()
   }
 
-  getBillingDatas = async (req: Request, res: Response, next: NextFunction) => {
+  getDashboard = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { date } = req.query
 
       const { startDate, endDate } = await convertDatesToYearAndMonth(date?.toString())
 
-      const dashboards = await this.dashboardService.getBillingDatas(startDate, endDate)
+      const dashboards = await this.dashboardService.getDashboardDatas(startDate, endDate)
 
       res.json(dashboards)
-    } catch (error) {
-      next(error)
-    }
-  }
-
-  getCostRequestBuys = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const { date } = req.query
-
-      const { startDate, endDate } = await convertDatesToYearAndMonth(date?.toString())
-
-      const costs = await this.dashboardService.getCostRequestBuys(startDate, endDate)
-
-      res.json({ costProducts: costs })
     } catch (error) {
       next(error)
     }

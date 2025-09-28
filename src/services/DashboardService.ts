@@ -1,6 +1,7 @@
 import RequestBuyStatus from '../enums/RequestBuyStatus'
 import { IDashboard } from '../models/Dashboard'
 import BuyRepository from '../repositories/BuyRepository'
+import ClientRepository from '../repositories/ClientRepository'
 import DashboardRepository from '../repositories/DashboardRepository'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
@@ -9,14 +10,16 @@ export default class DashboardService extends BaseService<IDashboard> {
   private dashboardRepository: DashboardRepository
   private serviceOrderRepository: ServiceOrderRepository
   private buyRepository: BuyRepository
+  private clientRepository: ClientRepository
   constructor () {
     super(new DashboardRepository())
     this.dashboardRepository = new DashboardRepository()
     this.serviceOrderRepository = new ServiceOrderRepository()
     this.buyRepository = new BuyRepository()
+    this.clientRepository = new ClientRepository()
   }
 
-  async getBillingDatas (startDate?: Date, endDate?: Date) {
+  async getDashboardDatas (startDate?: Date, endDate?: Date) {
     const pipeline: any[] = []
 
     if (startDate && endDate) {
@@ -28,9 +31,15 @@ export default class DashboardService extends BaseService<IDashboard> {
     }
 
     const billingTotalValue = await this.getBillingServiceOrdersTotalValue(pipeline)
+    const totalCost = await this.getCostRequestBuys(startDate, endDate)
+    const grossProfit = billingTotalValue.totalGeneral - totalCost
+    const quantityNewClients = await this.getQuantityNewClients(startDate, endDate)
 
     return {
-      billingTotalValue
+      billingTotalValue,
+      totalCost,
+      grossProfit,
+      quantityNewClients
     }
   }
 
@@ -50,7 +59,8 @@ export default class DashboardService extends BaseService<IDashboard> {
           _id: null,
           totalGeneral: { $sum: '$totalValueGeneral' },
           totalServices: { $sum: '$totalValueServices' },
-          totalProducts: { $sum: '$totalValueProducts' }
+          totalProducts: { $sum: '$totalValueProducts' },
+          countOrders: { $sum: 1 }
         }
       }
     ])
@@ -59,9 +69,10 @@ export default class DashboardService extends BaseService<IDashboard> {
       ? {
         totalGeneral: result[0].totalGeneral,
         totalServices: result[0].totalServices,
-        totalProducts: result[0].totalProducts
+        totalProducts: result[0].totalProducts,
+        countOrders: result[0].countOrders
       }
-      : { totalGeneral: 0, totalServices: 0, totalProducts: 0 }
+      : { totalGeneral: 0, totalServices: 0, totalProducts: 0, countOrders: 0 }
   }
 
   async getCostRequestBuys (startDate?: Date, endDate?: Date): Promise<number> {
@@ -102,5 +113,22 @@ export default class DashboardService extends BaseService<IDashboard> {
     ])
 
     return result.length > 0 ? result[0].totalCost : 0
+  }
+
+  async getQuantityNewClients (startDate?: Date, endDate?: Date) {
+    const pipeline: any[] = []
+
+    if (startDate && endDate) {
+      pipeline.push({
+        $match: {
+          createdAt: { $gte: startDate, $lte: endDate }
+        }
+      })
+    }
+
+    pipeline.push({ $count: 'quantityNewClients' })
+
+    const result = await this.clientRepository.aggregateMany(pipeline)
+    return result.length > 0 ? result[0].quantityNewClients : 0
   }
 }
