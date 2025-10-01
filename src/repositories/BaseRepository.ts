@@ -19,6 +19,10 @@ export default class BaseRepository<T extends Document> {
     return this.model.find()
   }
 
+  async findOne (filter: FilterQuery<T>): Promise<T | null> {
+    return this.model.findOne(filter)
+  }
+
   findById (id: Types.ObjectId) {
     return this.model.findById(id)
   }

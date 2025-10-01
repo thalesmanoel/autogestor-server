@@ -38,6 +38,16 @@ export default class VehicleController {
     }
   }
 
+  getDatasByPlate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { plate } = req.params
+      const data = await this.vehicleService.getDatasByPlate(plate)
+      res.json(data)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params

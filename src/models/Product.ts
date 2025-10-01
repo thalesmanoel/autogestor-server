@@ -8,6 +8,7 @@ export interface IProduct extends Document {
     costUnitPrice: number;
     salePrice?: number;
     grossProfitMargin?: number;
+    // unitOfMeasure?: string;
     providerIds?: mongoose.Types.ObjectId[];
 }
 
