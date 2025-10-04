@@ -1,11 +1,14 @@
 import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
 
+import Role from '../enums/Role'
+
 interface IJwtPayload {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: Role;
+  manager: boolean;
 }
 
 declare global {

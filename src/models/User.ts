@@ -21,7 +21,8 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: Object.values(Role),
       required: true
-    }
+    },
+    manager: { type: Boolean, default: false }
   },
   { timestamps: true }
 )
