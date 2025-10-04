@@ -15,4 +15,6 @@ router.delete('/:id', buyController.delete)
 
 router.put('/:id/authorize', AllowedRoles(Role.ADMIN), buyController.authorize)
 
+router.get('/history/:productId', buyController.getProductHistory)
+
 export default router

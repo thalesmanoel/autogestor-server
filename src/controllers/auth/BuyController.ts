@@ -60,6 +60,16 @@ export default class BuyController {
     }
   }
 
+  getProductHistory = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { productId } = req.params
+      const history = await this.buyService.getProductHistory(new Types.ObjectId(productId))
+      res.json(history)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   authorize = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params

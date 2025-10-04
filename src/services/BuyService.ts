@@ -114,6 +114,31 @@ export default class BuyService extends BaseService<IBuy> {
     return buy
   }
 
+  async getProductHistory (productId: Types.ObjectId) {
+    const pipeline: any[] = [
+      { $match: { 'products.productId': productId } },
+      { $unwind: '$products' },
+      { $match: { 'products.productId': productId } },
+      {
+        $project: {
+          _id: 0,
+          requestDate: 1,
+          deliveredDate: 1,
+          quantity: '$products.totalQuantity',
+          providerIds: '$products.providerIds',
+          costUnitPrice: '$products.costUnitPrice',
+          totalValue: { $multiply: ['$products.totalQuantity', '$products.costUnitPrice'] }
+        }
+      },
+      { $sort: { requestDate: -1 } },
+      { $limit: 10 }
+    ]
+
+    const history = await this.buyRepository.aggregateMany(pipeline)
+
+    return history
+  }
+
   async authorize (id: Types.ObjectId, authorization: boolean, changedAuthorizationByUser?: Types.ObjectId) {
     const buy = await this.buyRepository.findById(id)
     if (!buy) throw new Error('Solicitação de compra não encontrada')
