@@ -1,4 +1,5 @@
 import 'dotenv/config'
+import './queues/OrderDeadlineQueue'
 
 import cors from 'cors'
 import express from 'express'
