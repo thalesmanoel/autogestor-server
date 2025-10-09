@@ -27,6 +27,7 @@ export async function checkOrdersNearDeadline () {
     .map(o => `Código: ${o.code} | Prazo: ${o.deadline?.toLocaleDateString()}`)
     .join('\n')}`
 
-  const recipients = ['admin@empresa.com', 'manager@empresa.com']
+  const recipients = ['thalesdesenvolvedor@gmail.com', 'thalesdesenvolvedor2@gmail.com']
+
   await sendMail(recipients, subject, text)
 }
