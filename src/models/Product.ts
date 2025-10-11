@@ -8,7 +8,7 @@ export interface IProduct extends Document {
     costUnitPrice: number;
     salePrice?: number;
     grossProfitMargin?: number;
-    // unitOfMeasure?: string;
+    unitMeasure?: string;
     providerIds?: mongoose.Types.ObjectId[];
 }
 
@@ -20,7 +20,8 @@ const ProductSchema = new Schema<IProduct>(
     providerIds: { type: [mongoose.Schema.Types.ObjectId] },
     costUnitPrice: { type: Number, required: true },
     salePrice: { type: Number },
-    grossProfitMargin: { type: Number }
+    grossProfitMargin: { type: Number },
+    unitMeasure: { type: String }
   },
   { timestamps: true }
 )

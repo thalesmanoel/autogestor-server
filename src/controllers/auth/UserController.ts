@@ -21,7 +21,6 @@ export default class UserController {
 
   getAll = async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      console.log('Fetching all users')
       const users = await this.userService.findAll()
       res.json(users)
     } catch (error) {

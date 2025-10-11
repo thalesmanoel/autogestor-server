@@ -33,7 +33,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     let totalServices = 0
     if (data.services && data.services.length > 0) {
       for (const item of data.services) {
-        totalServices += item.unitValue * item.quantity
+        totalServices += item.totalValue * item.quantity
       }
     }
 

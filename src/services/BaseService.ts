@@ -64,8 +64,6 @@ export default class BaseService<T extends Document> {
 
     pipeline.push({ $sort: { createdAt: -1 } })
 
-    console.log(pipeline)
-
     return this.repository.aggregatePaginate(pipeline, currentPage, currentLimit)
   }
 }
