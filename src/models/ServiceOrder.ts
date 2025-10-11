@@ -17,9 +17,12 @@ export interface IServiceOrder extends Document {
   deadline?: Date;
   completionDate?: Date;
   pickupDate?: Date;
+  discountType?: string;
+  discountValue?: number;
   totalValueProducts?: number;
   totalValueServices?: number;
   totalValueGeneral?: number;
+  totalValueWithDiscount?: number;
   paymentType?: string;
   paid: boolean;
   paymentDate?: Date;

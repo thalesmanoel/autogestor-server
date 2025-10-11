@@ -41,6 +41,14 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     data.totalValueServices = totalServices
     data.totalValueGeneral = totalProducts + totalServices
 
+    if (data.discountType && data.discountValue) {
+      if (data.discountType === 'percent') {
+        data.totalValueWithDiscount = data.totalValueGeneral - (data.totalValueGeneral * (data.discountValue / 100))
+      } else if (data.discountType === 'real') {
+        data.totalValueWithDiscount = data.totalValueGeneral - data.discountValue
+      }
+    }
+
     return data
   }
 
