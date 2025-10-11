@@ -26,7 +26,7 @@ const MechanicSchema = new Schema<IMechanic>(
     number: { type: String, required: true },
     city: { type: String, required: true },
     state: { type: String, required: true },
-    anotations: { type: String }
+    notes: { type: String }
   },
   { timestamps: true }
 )
