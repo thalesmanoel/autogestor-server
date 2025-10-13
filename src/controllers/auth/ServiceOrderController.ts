@@ -87,12 +87,16 @@ export default class ServiceOrderController {
     }
   }
 
-  // exportPdf = async (req: Request, res: Response) => {
-  //   try {
-  //     const { id } = req.params
-  //     await this.serviceOrderService.exportPdf(new Types.ObjectId(id), res)
-  //   } catch (error: any) {
-  //     res.status(500).json({ error: error.message })
-  //   }
-  // }
+  exportServiceOrderAsPDF = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params
+      const pdfBuffer = await this.serviceOrderService.generateServiceOrderPDF(new Types.ObjectId(id))
+
+      res.setHeader('Content-Type', 'application/pdf')
+      res.setHeader('Content-Disposition', `inline; filename=ordem-servico-${id}.pdf`)
+      res.send(pdfBuffer)
+    } catch (error: any) {
+      next(error)
+    }
+  }
 }

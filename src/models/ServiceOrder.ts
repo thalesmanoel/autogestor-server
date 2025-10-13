@@ -4,13 +4,16 @@ import OrderServiceStatus from '../enums/OrderServiceStatus'
 import { IClient } from './Client'
 import { IProductItem, ProductItemSchema } from './ProductItem'
 import { IServiceItem, ServiceItemSchema } from './ServiceItem'
+import { IVehicle } from './Vehicle'
 
 export interface IServiceOrder extends Document {
   code: string;
   clientId: mongoose.Types.ObjectId | IClient;
+  veicleId: mongoose.Types.ObjectId | IVehicle;
   services?: IServiceItem[];
   products?: IProductItem[];
-  description: string;
+  descriptionClient?: string;
+  notes?: string;
   technicalAnalysis?: string;
   status: OrderServiceStatus;
   entryDate?: Date;
@@ -35,7 +38,7 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
     services: [ServiceItemSchema],
     products: [ProductItemSchema],
     technicalAnalysis: { type: String },
-    description: { type: String, required: true },
+    descriptionClient: { type: String },
     status: { type: String, enum: Object.values(OrderServiceStatus) },
     entryDate: { type: Date },
     deadline: { type: Date },

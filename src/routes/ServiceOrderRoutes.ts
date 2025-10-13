@@ -14,6 +14,6 @@ router.delete('/:id', serviceOrderController.delete)
 router.put('/change-status/:id', serviceOrderController.changeStatus)
 router.put('/update-paid/:id', serviceOrderController.updatePaidStatus)
 
-// router.post('/export-pdf/:id', serviceOrderController.exportPdf)
+router.get('/export-pdf/:id', serviceOrderController.exportServiceOrderAsPDF)
 
 export default router

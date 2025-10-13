@@ -1,21 +1,31 @@
+import fs from 'fs'
 import { Types } from 'mongoose'
+import path from 'path'
+import puppeteer from 'puppeteer'
 
 import OrderServiceStatus from '../enums/OrderServiceStatus'
 import { IServiceOrder } from '../models/ServiceOrder'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
+import ClientService from './ClientService'
 import DashboardService from './DashboardService'
 import ProductService from './ProductService'
+import VehicleService from './VehicleService'
 
 export default class ServiceOrderService extends BaseService<IServiceOrder> {
   private productService: ProductService
   private serviceOrderRepository: ServiceOrderRepository
   private dashboardService: DashboardService
+  private clientService: ClientService
+  private vehicleService: VehicleService
+
   constructor () {
     super(new ServiceOrderRepository())
     this.productService = new ProductService()
     this.serviceOrderRepository = new ServiceOrderRepository()
     this.dashboardService = new DashboardService()
+    this.clientService = new ClientService()
+    this.vehicleService = new VehicleService()
   }
 
   async calculateTotals (data: IServiceOrder): Promise<IServiceOrder> {
@@ -138,71 +148,310 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     }
   }
 
-  // async exportPdf (serviceOrderId: Types.ObjectId, res: Response) {
-  //   const order = await this.serviceOrderRepository.findById(serviceOrderId)
-  //     .populate('clientId')
-  //     .populate('serviceId')
-  //     .populate('products.productId')
-  //     .lean()
-  //     .exec()
+  async generateServiceOrderPDF (id: Types.ObjectId): Promise<any> {
+    const serviceOrder = await this.serviceOrderRepository.findById(id)
+      .populate('clientId')
+      .lean()
 
-  //   if (!order) {
-  //     throw new Error('Ordem de serviço não encontrada')
-  //   }
+    if (!serviceOrder) {
+      throw new Error('Ordem de serviço não encontrada')
+    }
 
-  //   // Criar o documento PDF
-  //   const doc = new PDFDocument({ margin: 40 })
-  //   res.setHeader('Content-Type', 'application/pdf')
-  //   res.setHeader('Content-Disposition', `inline; filename=OS-${order.code}.pdf`)
-  //   doc.pipe(res)
+    const client = await this.clientService.findById(serviceOrder.clientId as Types.ObjectId)
+    const vehicle = await this.vehicleService.findById(serviceOrder.veicleId as Types.ObjectId)
 
-  //   // Título
-  //   doc.fontSize(18).text(`Ordem de Serviço - ${order.code}`, { align: 'center' })
-  //   doc.moveDown()
+    // ====== Logo ======
+    const logoPath = path.resolve('src/utils/logoDoOs.png')
+    const logoBase64 = fs.existsSync(logoPath)
+      ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`
+      : ''
 
-  //   // Cliente
-  //   if (order.clientId && typeof order.clientId === 'object' && 'name' in order.clientId) {
-  //     doc.text(`Cliente: ${(order.clientId as any).name}`)
-  //   } else {
-  //     doc.text('Cliente: -')
-  //   }
+    // ====== HTML ======
+    const html = `
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 25px;
+        color: #333;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #4a90e2;
+        padding-bottom: 8px;
+        margin-bottom: 25px;
+      }
+      .header img {
+        width: 100px;
+      }
+      .header .info {
+        text-align: right;
+        font-size: 12px;
+      }
 
-  //   // Serviço
-  //   if (order.serviceId && typeof order.serviceId === 'object' && 'name' in order.serviceId) {
-  //     doc.text(`Serviço: ${(order.serviceId as any).name}`)
-  //   } else {
-  //     doc.text('Serviço: -')
-  //   }
+      h2 {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: #333;
+      }
 
-  //   // Dados principais
-  //   doc.text(`Descrição: ${order.description}`)
-  //   doc.text(`Status: ${order.status}`)
-  //   doc.text(`Entrada: ${order.entryDate ? new Date(order.entryDate).toLocaleDateString() : '-'}`)
-  //   doc.text(`Prazo: ${order.deadline ? new Date(order.deadline).toLocaleDateString() : '-'}`)
-  //   doc.moveDown()
+      .card {
+        border: 1px solid #d0d7de;
+        border-radius: 6px;
+        padding: 12px 18px;
+        margin-bottom: 18px;
+        background: #f8f9fb;
+      }
 
-  //   // Produtos (se houver)
-  //   if (order.products && order.products.length > 0) {
-  //     doc.fontSize(14).text('Produtos:', { underline: true })
-  //     doc.moveDown(0.5)
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px 20px;
+        margin-top: 10px;
+      }
 
-  //     order.products.forEach((p: any, i: number) => {
-  //       doc.fontSize(12).text(
-  //         `${i + 1}. ${p.productId?.name || '-'} | Qtde: ${p.quantity} | Valor: R$ ${
-  //           p.salePrice?.toFixed(2) || '0.00'
-  //         }`
-  //       )
-  //     })
-  //     doc.moveDown()
-  //   }
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+      .field label {
+        font-size: 11px;
+        color: #555;
+        margin-bottom: 3px;
+      }
+      .field-value {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+        padding: 4px 6px;
+        font-size: 12px;
+      }
 
-  //   // Totais
-  //   doc.fontSize(12).text(`Total Produtos: R$ ${order.totalValueProducts?.toFixed(2) || '0.00'}`)
-  //   doc.text(`Total Serviços: R$ ${order.totalValueServices?.toFixed(2) || '0.00'}`)
-  //   doc.text(`Total Geral: R$ ${order.totalValueGeneral?.toFixed(2) || '0.00'}`)
-  //   doc.text(`Forma de pagamento: ${order.paymentType || '-'}`)
-  //   doc.text(`Pago: ${order.paid ? 'Sim' : 'Não'}`)
+      .section {
+        margin-top: 18px;
+      }
 
-  //   doc.end()
-  // }
+      .bullet {
+        margin-left: 15px;
+        font-size: 12px;
+      }
+
+      .inline {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      ${logoBase64 ? `<img src="${logoBase64}" />` : ''}
+      <div class="info">
+        <div><strong>Oficina Mecânica XPTO</strong></div>
+        <div>Rua dos Mecânicos, 123</div>
+        <div>contato@xptooficina.com</div>
+      </div>
+    </div>
+
+    <!-- DADOS DA OS -->
+    <div class="card">
+      <h2>📄 Dados da OS</h2>
+      <div class="grid">
+        <div class="field">
+          <label>Número da OS</label>
+          <div class="field-value">${serviceOrder.code}</div>
+        </div>
+        <div class="field">
+          <label>Status</label>
+          <div class="field-value">${serviceOrder.status}</div>
+        </div>
+        <div class="field">
+          <label>Entrada do veículo</label>
+          <div class="field-value">${this.formatDate(serviceOrder.entryDate)}</div>
+        </div>
+        <div class="field">
+          <label>Previsão de entrega</label>
+          <div class="field-value">${this.formatDate(serviceOrder.deadline)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTE -->
+    <div class="card">
+      <h2>👤 Cliente</h2>
+      ${
+  client
+    ? `
+      <div class="grid">
+        <div class="field">
+          <label>Nome / Razão Social</label>
+          <div class="field-value">${client.name}</div>
+        </div>
+        <div class="field">
+          <label>CPF / CNPJ</label>
+          <div class="field-value">${client.cpf ?? client.cnpj ?? '-'}</div>
+        </div>
+        <div class="field">
+          <label>Telefone</label>
+          <div class="field-value">${client.cellphone}</div>
+        </div>
+        <div class="field">
+          <label>Email</label>
+          <div class="field-value">${client.email}</div>
+        </div>
+        <div class="field">
+          <label>Endereço</label>
+          <div class="field-value">${client.address}</div>
+        </div>
+      </div>`
+    : '<p>-</p>'
+}
+    </div>
+
+    <!-- VEÍCULO -->
+    <div class="card">
+      <h2>🚗 Dados do Veículo</h2>
+      ${
+  vehicle
+    ? `
+      <div class="grid">
+        <div class="field">
+          <label>Placa</label>
+          <div class="field-value">${vehicle.licensePlate}</div>
+        </div>
+        <div class="field">
+          <label>Marca</label>
+          <div class="field-value">${vehicle.brand}</div>
+        </div>
+        <div class="field">
+          <label>Modelo</label>
+          <div class="field-value">${vehicle.name}</div>
+        </div>
+        <div class="field">
+          <label>Ano</label>
+          <div class="field-value">${vehicle.year}</div>
+        </div>
+        <div class="field">
+          <label>Tipo de Combustível</label>
+          <div class="field-value">${vehicle.fuel}</div>
+        </div>
+        <div class="field">
+          <label>Chassi</label>
+          <div class="field-value">${vehicle.chassi ?? '-'}</div>
+        </div>
+        <div class="field">
+          <label>KM</label>
+          <div class="field-value">${vehicle.km ?? '-'}</div>
+        </div>
+      </div>`
+    : '<p>-</p>'
+}
+    </div>
+
+    <!-- SOLICITAÇÃO -->
+    <div class="card">
+      <h2>📝 Solicitação do Cliente</h2>
+      <p>${serviceOrder.descriptionClient ?? '-'}</p>
+    </div>
+
+    <!-- ANÁLISE -->
+    <div class="card">
+      <h2>🔧 Análise / Diagnóstico</h2>
+      <p>${serviceOrder.technicalAnalysis ?? '-'}</p>
+    </div>
+
+    <!-- SERVIÇOS -->
+    <div class="card">
+      <h2>🧰 Serviços</h2>
+      ${
+  serviceOrder.services?.length
+    ? serviceOrder.services
+      .map(
+        (s) =>
+          `<p class="bullet">• ${s.title} — ${s.workHours}h | Qtd: ${s.quantity} | Valor/h: R$${s.hourValue} | Total: R$${s.totalValue}</p>`
+      )
+      .join('')
+    : '<p>Nenhum serviço registrado.</p>'
+}
+    </div>
+
+    <!-- PRODUTOS -->
+    <div class="card">
+      <h2>📦 Produtos</h2>
+      ${
+  serviceOrder.products?.length
+    ? serviceOrder.products
+      .map(
+        (p) =>
+          `<p class="bullet">• ${p.name} — Qtd: ${p.quantity} | Unit: R$${p.salePrice ?? 0}</p>`
+      )
+      .join('')
+    : '<p>Nenhum produto registrado.</p>'
+}
+    </div>
+
+    <!-- DESCONTOS -->
+    <div class="card">
+      <h2>💰 Descontos</h2>
+      ${
+  serviceOrder.discountType
+    ? `<p><b>Tipo:</b> ${serviceOrder.discountType}</p><p><b>Valor:</b> ${serviceOrder.discountValue}</p>`
+    : '<p>Sem descontos aplicados.</p>'
+}
+    </div>
+
+    <!-- OBSERVAÇÕES -->
+    <div class="card">
+      <h2>🗒️ Observações</h2>
+      <p>${serviceOrder.notes ?? '-'}</p>
+    </div>
+
+    <!-- TOTAIS -->
+    <div class="card">
+      <h2>📊 Valores Totais</h2>
+      <div class="grid">
+        <div class="field">
+          <label>Total Produtos</label>
+          <div class="field-value">R$ ${serviceOrder.totalValueProducts?.toFixed(2) ?? 0}</div>
+        </div>
+        <div class="field">
+          <label>Total Serviços</label>
+          <div class="field-value">R$ ${serviceOrder.totalValueServices?.toFixed(2) ?? 0}</div>
+        </div>
+        <div class="field">
+          <label>Total Geral</label>
+          <div class="field-value">R$ ${serviceOrder.totalValueGeneral?.toFixed(2) ?? 0}</div>
+        </div>
+        ${
+  serviceOrder.totalValueWithDiscount
+    ? `<div class="field"><label>Total com Desconto</label><div class="field-value">R$ ${serviceOrder.totalValueWithDiscount.toFixed(2)}</div></div>`
+    : ''
+}
+      </div>
+    </div>
+  </body>
+</html>
+`
+
+    // ====== PDF ======
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    await page.setContent(html, { waitUntil: 'networkidle0' })
+    const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true })
+    await browser.close()
+
+    return pdfBuffer
+  }
+
+  private formatDate (date?: Date) {
+    if (!date) return '-'
+    return new Date(date).toLocaleDateString('pt-BR')
+  }
 }
