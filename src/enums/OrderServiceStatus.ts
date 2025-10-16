@@ -1,5 +1,6 @@
 enum OrderServiceStatus {
   PENDING_PRODUCT = 'pending_product',
+  REQUEST = "request",
   PENDING = 'pending',
   BUDGET = 'budget',
   IN_PROGRESS = 'in_progress',
