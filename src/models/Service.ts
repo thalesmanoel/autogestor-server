@@ -6,6 +6,7 @@ export interface IService extends Document {
     workHours: string;
     hourValue: string;
     totalValue: number;
+    mechanic?: mongoose.Types.ObjectId;
 }
 
 const ServiceSchema = new Schema<IService>(
@@ -14,7 +15,8 @@ const ServiceSchema = new Schema<IService>(
     description: { type: String },
     workHours: { type: String, required: true },
     hourValue: { type: String, required: true },
-    totalValue: { type: Number, required: true }
+    totalValue: { type: Number, required: true },
+    mechanic: { type: Schema.Types.ObjectId }
   },
   { timestamps: true }
 )
