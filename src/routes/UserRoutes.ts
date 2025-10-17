@@ -13,4 +13,6 @@ router.get('/:id', userController.getById)
 router.put('/:id', userController.update)
 router.delete('/:id', userController.delete)
 
+router.patch('/change-password/:id', userController.changePassword)
+
 export default router

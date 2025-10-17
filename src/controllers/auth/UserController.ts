@@ -60,4 +60,25 @@ export default class UserController {
       next(error)
     }
   }
+
+  changePassword = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { id } = req.params
+      const { currentPassword, newPassword } = req.body
+
+      if (!currentPassword || !newPassword) {
+        return res.status(400).json({ message: 'Senhas não informadas.' })
+      }
+
+      const result = await this.userService.changePassword(new Types.ObjectId(id), currentPassword, newPassword)
+
+      if (!result.success) {
+        return res.status(400).json({ message: result.message })
+      }
+
+      res.json({ message: 'Senha alterada com sucesso.' })
+    } catch (error) {
+      next(error)
+    }
+  }
 }
