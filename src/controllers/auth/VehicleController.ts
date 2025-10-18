@@ -63,8 +63,7 @@ export default class VehicleController {
 
   delete = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const vehicle = await this.vehicleService.delete(new Types.ObjectId(req.params.id))
-      if (!vehicle) return res.status(404).json({ message: 'Produto não encontrado' })
+      await this.vehicleService.deleteVehicle(new Types.ObjectId(req.params.id))
       res.json({ message: 'Produto deletado com sucesso' })
     } catch (error) {
       next(error)

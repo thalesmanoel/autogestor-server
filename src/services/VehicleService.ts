@@ -1,4 +1,7 @@
+import { Types } from 'mongoose'
+
 import { ConsultarPlacaAPI } from '../integrations/ConsultarPlacaAPI'
+import ServiceOrder from '../models/ServiceOrder'
 import { IVehicle } from '../models/Vehicle'
 import VehicleRepository from '../repositories/VehicleRepository'
 import BaseService from './BaseService'
@@ -18,5 +21,18 @@ export default class VehicleService extends BaseService<IVehicle> {
 
     const data = await this.consultarPlacaAPI.getVehicleDatasByPlate(plate)
     return data
+  }
+
+  async deleteVehicle (id: Types.ObjectId): Promise<void> {
+    if (!id) throw new Error('ID do veículo é obrigatório para deletar.')
+    const vehicle = await this.vehicleRepository.findById(id).select('_id').lean()
+
+    if (!vehicle) throw new Error('Veículo não encontrado.')
+
+    const order = await ServiceOrder.findOne({ vehicleId: id }).select('_id').lean()
+
+    if (order) throw new Error('Não é possível deletar um veículo com ordens de serviço associadas.')
+
+    await this.repository.delete(id)
   }
 }
