@@ -25,9 +25,6 @@ export default class VehicleService extends BaseService<IVehicle> {
 
   async deleteVehicle (id: Types.ObjectId): Promise<void> {
     if (!id) throw new Error('ID do veículo é obrigatório para deletar.')
-    const vehicle = await this.vehicleRepository.findById(id).select('_id').lean()
-
-    if (!vehicle) throw new Error('Veículo não encontrado.')
 
     const order = await ServiceOrder.findOne({ vehicleId: id }).select('_id').lean()
 
