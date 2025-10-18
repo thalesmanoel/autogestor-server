@@ -2,7 +2,7 @@ import OrderServiceStatus from '../enums/OrderServiceStatus'
 import ServiceOrder from '../models/ServiceOrder'
 import { sendMail } from '../utils/mailer'
 
-export async function checkOrdersNearDeadline () {
+export async function checkOrdersNearDeadline (userEmail: string) {
   console.log('Iniciando verificação de ordens próximas do prazo...')
 
   const now = new Date()
@@ -24,10 +24,8 @@ export async function checkOrdersNearDeadline () {
 
   const subject = '⚠️ Ordens de serviço próximas do prazo de entrega'
   const text = `As seguintes ordens estão a 1 dia do prazo:\n\n${ordersDueTomorrow
-    .map(o => `Código: ${o.code} | Prazo: ${o.deadline?.toLocaleDateString()}`)
+    .map(o => `Código: ${o.code} | Prazo: ${o.deadline?.toLocaleDateString('pt-BR')}`)
     .join('\n')}`
 
-  const recipients = ['thalesdesenvolvedor@gmail.com', 'thalesdesenvolvedor2@gmail.com']
-
-  await sendMail(recipients, subject, text)
+  await sendMail([userEmail], subject, text)
 }

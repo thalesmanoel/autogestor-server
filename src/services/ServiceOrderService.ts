@@ -1,10 +1,12 @@
 import fs from 'fs'
 import { Types } from 'mongoose'
+import { ScheduledTask } from 'node-cron'
 import path from 'path'
 import puppeteer from 'puppeteer'
 
 import OrderServiceStatus from '../enums/OrderServiceStatus'
 import { IServiceOrder } from '../models/ServiceOrder'
+import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
 import ClientService from './ClientService'
@@ -18,6 +20,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
   private dashboardService: DashboardService
   private clientService: ClientService
   private vehicleService: VehicleService
+  private currentTask: ScheduledTask | null = null
 
   constructor () {
     super(new ServiceOrderRepository())
@@ -146,6 +149,18 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     if (paid) {
       await this.dashboardService.incrementMonthlyDashboard(order)
     }
+  }
+
+  async configureOrderDeadlineJob (hour: number, minute: number, userEmail: string) {
+    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      throw new Error('Hora ou minuto inválido')
+    }
+
+    if (!userEmail) {
+      throw new Error('Email do usuário é obrigatório')
+    }
+
+    scheduleOrderDeadlineJob(hour, minute, userEmail)
   }
 
   async generateServiceOrderPDF (id: Types.ObjectId): Promise<any> {

@@ -16,4 +16,7 @@ router.put('/update-paid/:id', serviceOrderController.updatePaidStatus)
 
 router.get('/export-pdf/:id', serviceOrderController.exportServiceOrderAsPDF)
 
+router.patch('/schedule-deadline-check', serviceOrderController.scheduleTimeReportEmailSender)
+router.patch('/stop-deadline-check', serviceOrderController.stopTimeReportEmailSender)
+
 export default router

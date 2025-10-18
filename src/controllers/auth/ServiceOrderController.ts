@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { Types } from 'mongoose'
 
+import { stopOrderDeadlineJob } from '../../queues/OrderDeadlineQueue'
 import ServiceOrderService from '../../services/ServiceOrderService'
 
 export default class ServiceOrderController {
@@ -72,6 +73,38 @@ export default class ServiceOrderController {
 
       if (!serviceOrder) { return res.status(404).json({ message: 'Ordem de serviço não encontrada' }) }
       res.status(200).json(serviceOrder)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  scheduleTimeReportEmailSender = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { hour, minute } = req.body
+      const userEmail = req.user?.email
+
+      if (!userEmail) {
+        return res.status(400).json({ message: 'Usuário não autenticado ou e-mail não encontrado' })
+      }
+
+      if (hour == null || minute == null) {
+        return res.status(400).json({ message: 'Hora e minuto são obrigatórios' })
+      }
+
+      await this.serviceOrderService.configureOrderDeadlineJob(hour, minute, userEmail)
+
+      res.status(200).json({
+        message: `Cron job configurado para rodar às ${hour}:${minute} e enviar e-mail para ${userEmail}`
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  stopTimeReportEmailSender = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      stopOrderDeadlineJob()
+      res.status(200).json({ message: 'Disparo de relatório para email pausado com sucesso' })
     } catch (error) {
       next(error)
     }
