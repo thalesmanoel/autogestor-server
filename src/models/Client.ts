@@ -4,10 +4,16 @@ export interface IClient extends Document {
     name: string;
     email: string;
     address: string;
+    number: string;
+    city: string;
+    state: string;
+    cep: string;
     cellphone: string;
     vehicleIds?: Types.ObjectId[];
+    stateRegistration?: string;
     cpf?: string;
     cnpj?: string;
+    notes?: string;
 }
 
 const ClientSchema = new Schema<IClient>(
@@ -17,6 +23,12 @@ const ClientSchema = new Schema<IClient>(
     address: { type: String, required: true },
     cellphone: { type: String, required: true },
     vehicleIds: [{ type: Schema.Types.ObjectId }],
+    stateRegistration: { type: String },
+    number: { type: String },
+    city: { type: String },
+    state: { type: String },
+    cep: { type: String },
+    notes: { type: String },
     cpf: { type: String },
     cnpj: { type: String }
   },
