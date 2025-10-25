@@ -8,4 +8,6 @@ const dashboardController = new DashboardController()
 router.get('/monthly', dashboardController.getDashboardMonthly)
 router.get('/annual-billing', dashboardController.getAnnualBilling)
 
+router.get('/service-orders-near-deadline', dashboardController.getServiceOrdersNearDeadline)
+
 export default router

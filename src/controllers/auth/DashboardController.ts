@@ -1,13 +1,16 @@
 import { NextFunction, Request, Response } from 'express'
 
 import DashboardService from '../../services/DashboardService'
+import ServiceOrderService from '../../services/ServiceOrderService'
 import { convertDatesToYearAndMonth } from '../../utils/ConvertDatesToYearAndMonth'
 
 export default class DashboardController {
   private dashboardService: DashboardService
+  private serviceOrderService: ServiceOrderService
 
   constructor () {
     this.dashboardService = new DashboardService()
+    this.serviceOrderService = new ServiceOrderService()
   }
 
   getDashboardMonthly = async (req: Request, res: Response, next: NextFunction) => {
@@ -33,6 +36,15 @@ export default class DashboardController {
       const annualBilling = await this.dashboardService.getLastMonthsBilling(Number(year) || undefined)
 
       res.json(annualBilling)
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  getServiceOrdersNearDeadline = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const serviceOrders = await this.serviceOrderService.checkServiceOrdersNearDeadline()
+      res.json(serviceOrders)
     } catch (error) {
       next(error)
     }

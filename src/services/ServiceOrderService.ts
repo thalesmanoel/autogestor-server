@@ -5,7 +5,7 @@ import path from 'path'
 import puppeteer from 'puppeteer'
 
 import OrderServiceStatus from '../enums/OrderServiceStatus'
-import { IServiceOrder } from '../models/ServiceOrder'
+import ServiceOrder, { IServiceOrder } from '../models/ServiceOrder'
 import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
@@ -161,6 +161,26 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     }
 
     scheduleOrderDeadlineJob(hour, minute, userEmail)
+  }
+
+  async checkServiceOrdersNearDeadline () {
+    const now = new Date()
+    const tomorrow = new Date(now)
+    tomorrow.setDate(now.getDate() + 1)
+
+    const startOfTomorrow = new Date(tomorrow.setHours(0, 0, 0, 0))
+    const endOfTomorrow = new Date(tomorrow.setHours(23, 59, 59, 999))
+
+    const ordersDueTomorrow = await ServiceOrder.find({
+      deadline: { $gte: startOfTomorrow, $lte: endOfTomorrow },
+      status: { $nin: [OrderServiceStatus.COMPLETED] }
+    }).select('code deadline').lean()
+
+    if (ordersDueTomorrow.length === 0) {
+      console.log('Nenhuma ordem próxima do prazo encontrada.')
+    }
+
+    return ordersDueTomorrow
   }
 
   async generateServiceOrderPDF (id: Types.ObjectId): Promise<any> {

@@ -1,26 +1,12 @@
-import OrderServiceStatus from '../enums/OrderServiceStatus'
-import ServiceOrder from '../models/ServiceOrder'
+import ServiceOrderService from '../services/ServiceOrderService'
 import { sendMail } from '../utils/mailer'
+
+const serviceOrderService = new ServiceOrderService()
 
 export async function checkOrdersNearDeadline (userEmail: string) {
   console.log('Iniciando verificação de ordens próximas do prazo...')
 
-  const now = new Date()
-  const tomorrow = new Date(now)
-  tomorrow.setDate(now.getDate() + 1)
-
-  const startOfTomorrow = new Date(tomorrow.setHours(0, 0, 0, 0))
-  const endOfTomorrow = new Date(tomorrow.setHours(23, 59, 59, 999))
-
-  const ordersDueTomorrow = await ServiceOrder.find({
-    deadline: { $gte: startOfTomorrow, $lte: endOfTomorrow },
-    status: { $nin: [OrderServiceStatus.COMPLETED] }
-  })
-
-  if (ordersDueTomorrow.length === 0) {
-    console.log('Nenhuma ordem próxima do prazo encontrada.')
-    return
-  }
+  const ordersDueTomorrow = await serviceOrderService.checkServiceOrdersNearDeadline()
 
   const subject = '⚠️ Ordens de serviço próximas do prazo de entrega'
   const text = `As seguintes ordens estão a 1 dia do prazo:\n\n${ordersDueTomorrow
