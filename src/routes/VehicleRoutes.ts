@@ -11,6 +11,7 @@ router.get('/:id', vehicleController.getById)
 router.put('/:id', vehicleController.update)
 router.delete('/:id', vehicleController.delete)
 
+router.get('/plate/:plate', vehicleController.getVehicleByPlate)
 router.get('/get-datas/:plate', vehicleController.getDatasByPlate)
 
 export default router

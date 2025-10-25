@@ -48,6 +48,17 @@ export default class VehicleController {
     }
   }
 
+  getVehicleByPlate = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { plate } = req.params
+      const vehicle = await this.vehicleService.getVehicleByPlate(plate)
+      if (!vehicle) return res.status(404).json({ message: 'Veículo não encontrado' })
+      res.json(vehicle)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   update = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params

@@ -23,6 +23,10 @@ export default class VehicleService extends BaseService<IVehicle> {
     return data
   }
 
+  getVehicleByPlate (plate: string) {
+    return this.vehicleRepository.findOne({ licensePlate: plate })
+  }
+
   async deleteVehicle (id: Types.ObjectId): Promise<void> {
     if (!id) throw new Error('ID do veículo é obrigatório para deletar.')
 
