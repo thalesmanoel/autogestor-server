@@ -1,4 +1,4 @@
-import { HydratedDocument, Types } from 'mongoose'
+import { HydratedDocument } from 'mongoose'
 
 import { IProduct } from '../models/Product'
 import ProductRepository from '../repositories/ProductRepository'
@@ -16,25 +16,5 @@ export default class ProductService extends BaseService<IProduct> {
   async createProduct (data: Partial<IProduct>): Promise<ProductDoc> {
     data.code = await this.productRepository.getNextSequence('productCode')
     return this.productRepository.create(data)
-  }
-
-  async addQuantity (id: Types.ObjectId, quantity: number): Promise<IProduct | null> {
-    const product = await this.productRepository.findById(id)
-    if (!product) { return null }
-
-    product.quantity += quantity
-    await this.productRepository.update(id, product)
-    return product
-  }
-
-  async removeQuantity (id: Types.ObjectId, quantity: number): Promise<IProduct | null> {
-    const product = await this.productRepository.findById(id)
-    if (!product) return null
-
-    product.quantity -= quantity
-    if (product.quantity < 0) product.quantity = 0
-
-    await this.repository.update(id, product)
-    return product
   }
 }

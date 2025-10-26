@@ -56,8 +56,6 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       }
     }
 
-    console.log('total com desconto:', data.totalValueWithDiscount)
-    console.log('total geral:', data)
     return data
   }
 
@@ -79,6 +77,10 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
         await product.save()
       }
     }
+
+    const serviceOrderCode = await this.serviceOrderRepository.getNextSequence('serviceOrderCode')
+
+    data.code = `OS-${serviceOrderCode}`
 
     const serviceOrder = await this.serviceOrderRepository.create(data)
 
@@ -211,10 +213,6 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
         }
       }
     ])
-
-    if (ordersDueTomorrow.length === 0) {
-      console.log('Nenhuma ordem próxima do prazo encontrada.')
-    }
 
     return ordersDueTomorrow
   }
