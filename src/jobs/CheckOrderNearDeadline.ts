@@ -3,7 +3,7 @@ import { sendMail } from '../utils/mailer'
 
 const serviceOrderService = new ServiceOrderService()
 
-export async function checkOrdersNearDeadline (userEmail: string) {
+export async function checkOrdersNearDeadline (userEmails: string[]) {
   console.log('Iniciando verificação de ordens próximas do prazo...')
 
   const ordersDueTomorrow = await serviceOrderService.checkServiceOrdersNearDeadline()
@@ -13,5 +13,5 @@ export async function checkOrdersNearDeadline (userEmail: string) {
     .map(o => `Código: ${o.code} | Prazo: ${o.deadline?.toLocaleDateString('pt-BR')}`)
     .join('\n')}`
 
-  await sendMail([userEmail], subject, text)
+  await sendMail(userEmails, subject, text)
 }

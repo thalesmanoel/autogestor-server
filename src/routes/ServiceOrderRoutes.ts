@@ -1,6 +1,8 @@
 import { Router } from 'express'
 
 import ServiceOrderController from '../controllers/auth/ServiceOrderController'
+import Role from '../enums/Role'
+import AllowedAccess from '../middlewares/AllowedLevelMiddleware'
 
 const router = Router()
 const serviceOrderController = new ServiceOrderController()
@@ -16,7 +18,7 @@ router.put('/update-paid/:id', serviceOrderController.updatePaidStatus)
 
 router.get('/export-pdf/:id', serviceOrderController.exportServiceOrderAsPDF)
 
-router.patch('/schedule-deadline-check', serviceOrderController.scheduleTimeReportEmailSender)
-router.patch('/stop-deadline-check', serviceOrderController.stopTimeReportEmailSender)
+router.patch('/schedule-deadline-check', AllowedAccess([Role.ADMIN], true), serviceOrderController.scheduleTimeReportEmailSender)
+router.patch('/stop-deadline-check', AllowedAccess([Role.ADMIN], true), serviceOrderController.stopTimeReportEmailSender)
 
 export default router

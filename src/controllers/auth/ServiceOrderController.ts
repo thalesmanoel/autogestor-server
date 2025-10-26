@@ -81,20 +81,15 @@ export default class ServiceOrderController {
   scheduleTimeReportEmailSender = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { hour, minute } = req.body
-      const userEmail = req.user?.email
-
-      if (!userEmail) {
-        return res.status(400).json({ message: 'Usuário não autenticado ou e-mail não encontrado' })
-      }
 
       if (hour == null || minute == null) {
         return res.status(400).json({ message: 'Hora e minuto são obrigatórios' })
       }
 
-      await this.serviceOrderService.configureOrderDeadlineJob(hour, minute, userEmail)
+      await this.serviceOrderService.configureOrderDeadlineJob(hour, minute)
 
       res.status(200).json({
-        message: `Cron job configurado para rodar às ${hour}:${minute} e enviar e-mail para ${userEmail}`
+        message: `Cron job configurado para rodar às ${hour}:${minute}`
       })
     } catch (error) {
       next(error)

@@ -4,8 +4,10 @@ import path from 'path'
 import puppeteer from 'puppeteer'
 
 import OrderServiceStatus from '../enums/OrderServiceStatus'
+import Role from '../enums/Role'
 import { IClient } from '../models/Client'
 import { IServiceOrder } from '../models/ServiceOrder'
+import User from '../models/User'
 import { IVehicle } from '../models/Vehicle'
 import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
@@ -149,16 +151,25 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     }
   }
 
-  async configureOrderDeadlineJob (hour: number, minute: number, userEmail: string) {
+  async configureOrderDeadlineJob (hour: number, minute: number) {
     if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
       throw new Error('Hora ou minuto inválido')
     }
 
-    if (!userEmail) {
+    const userEmails = await User.find({
+      $or: [
+        { role: Role.ADMIN },
+        { role: Role.EMPLOYER, manager: true }
+      ]
+    }).select('email')
+      .lean()
+      .then(users => users.map(u => u.email).filter(email => email))
+
+    if (userEmails.length === 0) {
       throw new Error('Email do usuário é obrigatório')
     }
 
-    scheduleOrderDeadlineJob(hour, minute, userEmail)
+    scheduleOrderDeadlineJob(hour, minute, userEmails)
   }
 
   async checkServiceOrdersNearDeadline () {

@@ -4,7 +4,7 @@ import { checkOrdersNearDeadline } from '../jobs/CheckOrderNearDeadline'
 
 let currentTask: ScheduledTask | null = null
 
-export function scheduleOrderDeadlineJob (hour: number, minute: number, userEmail: string) {
+export function scheduleOrderDeadlineJob (hour: number, minute: number, userEmails: string[]) {
   const cronExpression = `${minute} ${hour} * * *`
 
   if (currentTask) {
@@ -17,7 +17,7 @@ export function scheduleOrderDeadlineJob (hour: number, minute: number, userEmai
     async () => {
       console.log('Executando job de verificação de ordens próximas do prazo...')
       try {
-        await checkOrdersNearDeadline(userEmail)
+        await checkOrdersNearDeadline(userEmails)
       } catch (err) {
         console.error('Erro ao executar job de ordens próximas do prazo:', err)
       }
