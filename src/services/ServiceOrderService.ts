@@ -1,6 +1,5 @@
 import fs from 'fs'
 import { Types } from 'mongoose'
-import { ScheduledTask } from 'node-cron'
 import path from 'path'
 import puppeteer from 'puppeteer'
 
@@ -11,26 +10,19 @@ import { IVehicle } from '../models/Vehicle'
 import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
-import ClientService from './ClientService'
 import DashboardService from './DashboardService'
 import ProductService from './ProductService'
-import VehicleService from './VehicleService'
 
 export default class ServiceOrderService extends BaseService<IServiceOrder> {
   private productService: ProductService
   private serviceOrderRepository: ServiceOrderRepository
   private dashboardService: DashboardService
-  private clientService: ClientService
-  private vehicleService: VehicleService
-  private currentTask: ScheduledTask | null = null
 
   constructor () {
     super(new ServiceOrderRepository())
     this.productService = new ProductService()
     this.serviceOrderRepository = new ServiceOrderRepository()
     this.dashboardService = new DashboardService()
-    this.clientService = new ClientService()
-    this.vehicleService = new VehicleService()
   }
 
   async calculateTotals (data: IServiceOrder): Promise<IServiceOrder> {
@@ -64,6 +56,8 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       }
     }
 
+    console.log('total com desconto:', data.totalValueWithDiscount)
+    console.log('total geral:', data)
     return data
   }
 
@@ -238,6 +232,15 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     const client = serviceOrder.clientId as IClient
     const vehicle = serviceOrder.vehicleId as IVehicle
 
+    const statusTranslated = {
+      [OrderServiceStatus.REQUEST]: 'Solicitação',
+      [OrderServiceStatus.PENDING_PRODUCT]: 'Pendente de Produto',
+      [OrderServiceStatus.BUDGET]: 'Orçamento',
+      [OrderServiceStatus.IN_PROGRESS]: 'Em Progresso',
+      [OrderServiceStatus.COMPLETED]: 'Concluída',
+      [OrderServiceStatus.CANCELED]: 'Cancelada'
+    }
+
     // ====== Logo ======
     const logoPath = path.resolve('src/utils/logoDoOs.png')
     const logoBase64 = fs.existsSync(logoPath)
@@ -343,12 +346,12 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       <h2>📄 Dados da OS</h2>
       <div class="grid">
         <div class="field">
-          <label>Número da OS</label>
+          <label>Código da OS</label>
           <div class="field-value">${serviceOrder.code}</div>
         </div>
         <div class="field">
           <label>Status</label>
-          <div class="field-value">${serviceOrder.status}</div>
+          <div class="field-value">${statusTranslated[serviceOrder.status]}</div>
         </div>
         <div class="field">
           <label>Entrada do veículo</label>

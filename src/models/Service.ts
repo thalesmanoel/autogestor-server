@@ -3,8 +3,8 @@ import mongoose, { Document, Schema } from 'mongoose'
 export interface IService extends Document {
     title: string;
     description?: string;
-    workHours: string;
-    hourValue: string;
+    workHours: number;
+    hourValue: number;
     totalValue: number;
     mechanicId?: mongoose.Types.ObjectId;
 }
@@ -13,8 +13,8 @@ const ServiceSchema = new Schema<IService>(
   {
     title: { type: String, required: true },
     description: { type: String },
-    workHours: { type: String, required: true },
-    hourValue: { type: String, required: true },
+    workHours: { type: Number, required: true },
+    hourValue: { type: Number, required: true },
     totalValue: { type: Number, required: true },
     mechanicId: { type: Schema.Types.ObjectId }
   },

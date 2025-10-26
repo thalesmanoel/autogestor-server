@@ -48,8 +48,13 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
     totalValueProducts: { type: Number },
     totalValueServices: { type: Number },
     totalValueGeneral: { type: Number },
+    totalValueWithDiscount: { type: Number },
+    discountType: { type: String },
+    discountValue: { type: Number },
+    notes: { type: String },
     paymentType: { type: String },
-    paid: { type: Boolean }
+    paid: { type: Boolean },
+    paymentDate: { type: Date }
   },
   { timestamps: true }
 )
