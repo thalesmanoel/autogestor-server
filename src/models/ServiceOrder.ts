@@ -9,7 +9,7 @@ import { IVehicle } from './Vehicle'
 export interface IServiceOrder extends Document {
   code: string;
   clientId: mongoose.Types.ObjectId | IClient;
-  veicleId: mongoose.Types.ObjectId | IVehicle;
+  vehicleId: mongoose.Types.ObjectId | IVehicle;
   services?: IServiceItem[];
   products?: IProductItem[];
   descriptionClient?: string;
@@ -34,7 +34,8 @@ export interface IServiceOrder extends Document {
 const ServiceOrderSchema = new Schema<IServiceOrder>(
   {
     code: { type: String, required: true, unique: true },
-    clientId: { type: Schema.Types.ObjectId, required: true },
+    clientId: { type: Schema.Types.ObjectId, required: true, ref: 'Client' },
+    vehicleId: { type: Schema.Types.ObjectId, required: true, ref: 'Vehicle' },
     services: [ServiceItemSchema],
     products: [ProductItemSchema],
     technicalAnalysis: { type: String },

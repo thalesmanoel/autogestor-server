@@ -5,7 +5,9 @@ import path from 'path'
 import puppeteer from 'puppeteer'
 
 import OrderServiceStatus from '../enums/OrderServiceStatus'
+import { IClient } from '../models/Client'
 import { IServiceOrder } from '../models/ServiceOrder'
+import { IVehicle } from '../models/Vehicle'
 import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
@@ -226,14 +228,15 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
   async generateServiceOrderPDF (id: Types.ObjectId): Promise<any> {
     const serviceOrder = await this.serviceOrderRepository.findById(id)
       .populate('clientId')
+      .populate('vehicleId')
       .lean()
 
     if (!serviceOrder) {
       throw new Error('Ordem de serviço não encontrada')
     }
 
-    const client = await this.clientService.findById(serviceOrder.clientId as Types.ObjectId)
-    const vehicle = await this.vehicleService.findById(serviceOrder.veicleId as Types.ObjectId)
+    const client = serviceOrder.clientId as IClient
+    const vehicle = serviceOrder.vehicleId as IVehicle
 
     // ====== Logo ======
     const logoPath = path.resolve('src/utils/logoDoOs.png')
