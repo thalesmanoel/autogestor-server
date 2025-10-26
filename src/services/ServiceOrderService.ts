@@ -5,7 +5,7 @@ import path from 'path'
 import puppeteer from 'puppeteer'
 
 import OrderServiceStatus from '../enums/OrderServiceStatus'
-import ServiceOrder, { IServiceOrder } from '../models/ServiceOrder'
+import { IServiceOrder } from '../models/ServiceOrder'
 import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import BaseService from './BaseService'
@@ -171,10 +171,50 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     const startOfTomorrow = new Date(tomorrow.setHours(0, 0, 0, 0))
     const endOfTomorrow = new Date(tomorrow.setHours(23, 59, 59, 999))
 
-    const ordersDueTomorrow = await ServiceOrder.find({
-      deadline: { $gte: startOfTomorrow, $lte: endOfTomorrow },
-      status: { $nin: [OrderServiceStatus.COMPLETED] }
-    }).select('code deadline').lean()
+    const ordersDueTomorrow = await this.serviceOrderRepository.aggregateMany([
+      {
+        $match: {
+          deadline: { $gte: startOfTomorrow, $lte: endOfTomorrow },
+          status: {
+            $nin: [
+              OrderServiceStatus.COMPLETED,
+              OrderServiceStatus.CANCELED
+            ]
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'clients',
+          localField: 'clientId',
+          foreignField: '_id',
+          as: 'client'
+        }
+      },
+      {
+        $unwind: { path: '$client', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $lookup: {
+          from: 'vehicles',
+          localField: 'vehicleId',
+          foreignField: '_id',
+          as: 'vehicle'
+        }
+      },
+      {
+        $unwind: { path: '$vehicle', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $project: {
+          _id: 1,
+          code: 1,
+          deadline: 1,
+          client: '$client.name',
+          vehicle: '$vehicle.name'
+        }
+      }
+    ])
 
     if (ordersDueTomorrow.length === 0) {
       console.log('Nenhuma ordem próxima do prazo encontrada.')
