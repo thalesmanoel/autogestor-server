@@ -1,3 +1,7 @@
+import fs from 'fs'
+import path from 'path'
+import puppeteer from 'puppeteer'
+
 import RequestBuyStatus from '../enums/RequestBuyStatus'
 import { IDashboard } from '../models/Dashboard'
 import { IServiceOrder } from '../models/ServiceOrder'
@@ -180,5 +184,193 @@ export default class DashboardService extends BaseService<IDashboard> {
     ])
 
     return result
+  }
+
+  async generateDashboardPDF (startDate?: Date, endDate?: Date): Promise<Buffer> {
+    const dashboardData = await this.getDashboardDatas(startDate, endDate)
+    const { billingTotalValue, totalCost, grossProfit, quantityNewClients } = dashboardData
+
+    // ====== Logo ======
+    const logoPath = path.resolve('src/utils/logoDoOs.png')
+    const logoBase64 = fs.existsSync(logoPath)
+      ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`
+      : ''
+
+    // ====== HTML ======
+    const html = `
+<html>
+  <head>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 25px;
+        color: #333;
+      }
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid #4a90e2;
+        padding-bottom: 8px;
+        margin-bottom: 25px;
+      }
+
+      .header img {
+        width: 100px;
+      }
+
+      .header .info {
+        text-align: right;
+        font-size: 12px;
+      }
+
+      h1 {
+        font-size: 16px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        color: #333;
+      }
+
+      h2 {
+        font-size: 14px;
+        font-weight: bold;
+        margin: 0 0 10px 0;
+        color: #333;
+      }
+
+      .card {
+        border: 1px solid #d0d7de;
+        border-radius: 6px;
+        padding: 14px 20px;
+        margin-bottom: 18px;
+        background: #f8f9fb;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 10px 20px;
+        margin-top: 10px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .field label {
+        font-size: 11px;
+        color: #555;
+        margin-bottom: 3px;
+      }
+
+      .field-value {
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+        padding: 4px 6px;
+        font-size: 12px;
+      }
+
+      .summary {
+        font-size: 13px;
+        margin-top: 8px;
+      }
+
+      .total {
+        font-weight: bold;
+        font-size: 13px;
+        color: #2c3e50;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      ${logoBase64 ? `<img src="${logoBase64}" />` : ''}
+      <div class="info">
+        <div><strong>Oficina Mecânica XPTO</strong></div>
+        <div>Rua dos Mecânicos, 123</div>
+        <div>contato@xptooficina.com</div>
+      </div>
+    </div>
+
+    <h1>📊 Relatório do Dashboard</h1>
+    <p>Período: <strong>${this.formatDate(startDate)} a ${this.formatDate(endDate)}</strong></p>
+
+    <!-- FATURAMENTO -->
+    <div class="card">
+      <h2>💵 Faturamento</h2>
+      <div class="grid">
+        <div class="field">
+          <label>Total Geral</label>
+          <div class="field-value">R$ ${billingTotalValue.totalGeneral.toFixed(2)}</div>
+        </div>
+        <div class="field">
+          <label>Total Serviços</label>
+          <div class="field-value">R$ ${billingTotalValue.totalServices.toFixed(2)}</div>
+        </div>
+        <div class="field">
+          <label>Total Produtos</label>
+          <div class="field-value">R$ ${billingTotalValue.totalProducts.toFixed(2)}</div>
+        </div>
+        <div class="field">
+          <label>Quantidade de Ordens</label>
+          <div class="field-value">${billingTotalValue.countOrders}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CUSTOS -->
+    <div class="card">
+      <h2>💰 Custos Operacionais</h2>
+      <div class="grid">
+        <div class="field">
+          <label>Total de Custos</label>
+          <div class="field-value">R$ ${totalCost.toFixed(2)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LUCRO -->
+    <div class="card">
+      <h2>📈 Lucro Bruto</h2>
+      <div class="grid">
+        <div class="field">
+          <label>Lucro Bruto</label>
+          <div class="field-value total">R$ ${grossProfit.toFixed(2)}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NOVOS CLIENTES -->
+    <div class="card">
+      <h2>👥 Novos Clientes</h2>
+      <div class="grid">
+        <div class="field">
+          <label>Quantidade</label>
+          <div class="field-value">${quantityNewClients}</div>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
+`
+
+    // ====== PDF ======
+    const browser = await puppeteer.launch()
+    const page = await browser.newPage()
+    await page.setContent(html, { waitUntil: 'networkidle0' })
+    const pdfUint8Array = await page.pdf({ format: 'A4', printBackground: true })
+    const pdfBuffer = Buffer.from(pdfUint8Array)
+    await browser.close()
+
+    return pdfBuffer
+  }
+
+  private formatDate (date?: Date) {
+    if (!date) return '-'
+    return new Date(date).toLocaleDateString('pt-BR')
   }
 }

@@ -49,4 +49,18 @@ export default class DashboardController {
       next(error)
     }
   }
+
+  exportReportToPDF = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { date } = req.query
+      const { startDate, endDate } = await convertDatesToYearAndMonth(date?.toString())
+      const pdfBuffer = await this.dashboardService.generateDashboardPDF(startDate, endDate)
+
+      res.setHeader('Content-Type', 'application/pdf')
+      res.setHeader('Content-Disposition', `inline; filename=relatorio-dashboard-${startDate?.toISOString().slice(0, 10)}-${endDate?.toISOString().slice(0, 10)}.pdf`)
+      res.send(pdfBuffer)
+    } catch (error: any) {
+      next(error)
+    }
+  }
 }

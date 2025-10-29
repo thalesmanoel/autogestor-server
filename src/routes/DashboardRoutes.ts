@@ -10,4 +10,6 @@ router.get('/annual-billing', dashboardController.getAnnualBilling)
 
 router.get('/service-orders-near-deadline', dashboardController.getServiceOrdersNearDeadline)
 
+router.get('/export-report-pdf', dashboardController.exportReportToPDF)
+
 export default router
