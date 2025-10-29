@@ -228,6 +228,57 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     return ordersDueTomorrow
   }
 
+  async checkServiceOrdersPastDeadline () {
+    const now = new Date()
+
+    const overdueOrders = await this.serviceOrderRepository.aggregateMany([
+      {
+        $match: {
+          deadline: { $lt: now },
+          status: {
+            $nin: [
+              OrderServiceStatus.COMPLETED,
+              OrderServiceStatus.CANCELED
+            ]
+          }
+        }
+      },
+      {
+        $lookup: {
+          from: 'clients',
+          localField: 'clientId',
+          foreignField: '_id',
+          as: 'client'
+        }
+      },
+      {
+        $unwind: { path: '$client', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $lookup: {
+          from: 'vehicles',
+          localField: 'vehicleId',
+          foreignField: '_id',
+          as: 'vehicle'
+        }
+      },
+      {
+        $unwind: { path: '$vehicle', preserveNullAndEmptyArrays: true }
+      },
+      {
+        $project: {
+          _id: 1,
+          code: 1,
+          deadline: 1,
+          client: '$client.name',
+          vehicle: '$vehicle.name'
+        }
+      }
+    ])
+
+    return overdueOrders
+  }
+
   async generateServiceOrderPDF (id: Types.ObjectId): Promise<any> {
     const serviceOrder = await this.serviceOrderRepository.findById(id)
       .populate('clientId')

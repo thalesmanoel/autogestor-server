@@ -50,6 +50,15 @@ export default class DashboardController {
     }
   }
 
+  getServiceOrdersPastDeadline = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const serviceOrders = await this.serviceOrderService.checkServiceOrdersPastDeadline()
+      res.json(serviceOrders)
+    } catch (error) {
+      next(error)
+    }
+  }
+
   exportReportToPDF = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { date } = req.query
