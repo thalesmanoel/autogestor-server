@@ -6,6 +6,7 @@ import puppeteer from 'puppeteer'
 import OrderServiceStatus from '../enums/OrderServiceStatus'
 import Role from '../enums/Role'
 import { IClient } from '../models/Client'
+import Mechanic from '../models/Mechanic'
 import { IServiceOrder } from '../models/ServiceOrder'
 import User from '../models/User'
 import { IVehicle } from '../models/Vehicle'
@@ -112,9 +113,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     if (status === OrderServiceStatus.COMPLETED) {
       serviceOrder.status = OrderServiceStatus.COMPLETED
       serviceOrder.completionDate = new Date()
-      if (!serviceOrder.paid) {
-        this.updatePaidStatus(id, true)
-      }
+
       await serviceOrder.save()
       return serviceOrder
     }
@@ -290,6 +289,25 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       throw new Error('Ordem de serviço não encontrada')
     }
 
+    const allMechanicIds = serviceOrder.services
+      ?.flatMap(s => s.mechanicIds || [])
+      .filter(Boolean)
+
+    let mechanicMap: Record<string, string> = {}
+
+    if (allMechanicIds?.length) {
+      const uniqueIds = [...new Set(allMechanicIds.map(id => id.toString()))]
+      const mechanics = await Mechanic.find(
+        { _id: { $in: uniqueIds } },
+        { name: 1 }
+      ).lean()
+
+      mechanicMap = mechanics.reduce((acc, m) => {
+        acc[m._id.toString()] = m.name
+        return acc
+      }, {} as Record<string, string>)
+    }
+
     const client = serviceOrder.clientId as IClient
     const vehicle = serviceOrder.vehicleId as IVehicle
 
@@ -384,6 +402,44 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
         margin-left: 15px;
         font-size: 12px;
       }
+      .list-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+      }
+
+      .subcard {
+        background: #fff;
+        border: 1px solid #d0d7de;
+        border-radius: 6px;
+        padding: 10px 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
+
+      .subcard-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        font-size: 12px;
+        margin-top: 3px;
+      }
+
+      .subcard-row strong {
+        font-size: 13px;
+        color: #333;
+      }
+
+      .subcard-row.mechanics {
+        justify-content: flex-start !important;
+        font-size: 11px;
+        color: #555;
+        margin-top: 6px;
+        padding-top: 4px;
+        border-top: 1px dashed #ddd;
+        gap: 4px;
+      }
+
 
       .inline {
         display: flex;
@@ -511,33 +567,65 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
 
     <!-- SERVIÇOS -->
     <div class="card">
-      <h2>🧰 Serviços</h2>
-      ${
+  <h2>🧰 Serviços</h2>
+  ${
   serviceOrder.services?.length
-    ? serviceOrder.services
-      .map(
-        (s) =>
-          `<p class="bullet">• ${s.title} — ${s.workHours}h | Qtd: ${s.quantity} | Valor/h: R$${s.hourValue} | Total: R$${s.totalValue}</p>`
-      )
-      .join('')
+    ? `<div class="list-grid">
+          ${serviceOrder.services
+    .map((s) => {
+      const mechanicNames = (s.mechanicIds || [])
+        .map(id => mechanicMap[id.toString()] || '—')
+        .join(', ')
+
+      return `
+              <div class="subcard">
+                <div class="subcard-row">
+                  <strong>${s.title}</strong>
+                </div>
+                <div class="subcard-row">
+                  <span><b>Duração:</b> ${s.workHours}h</span>
+                  <span><b>Qtd:</b> ${s.quantity}</span>
+                  <span><b>Valor/h:</b> R$${s.hourValue}</span>
+                  <span><b>Total:</b> R$${s.totalValue}</span>
+                </div>
+                ${
+  mechanicNames
+    ? `<div class="subcard-row mechanics"><b>Mecânicos:</b> ${mechanicNames}</div>`
+    : ''
+}
+              </div>`
+    })
+    .join('')}
+        </div>`
     : '<p>Nenhum serviço registrado.</p>'
 }
-    </div>
+</div>
 
-    <!-- PRODUTOS -->
-    <div class="card">
-      <h2>📦 Produtos</h2>
-      ${
+<!-- PRODUTOS -->
+<div class="card">
+  <h2>📦 Produtos</h2>
+  ${
   serviceOrder.products?.length
-    ? serviceOrder.products
-      .map(
-        (p) =>
-          `<p class="bullet">• ${p.name} — Qtd: ${p.quantity} | Unit: R$${p.salePrice ?? 0}</p>`
-      )
-      .join('')
+    ? `<div class="list-grid">
+          ${serviceOrder.products
+    .map(
+      (p) => `
+              <div class="subcard">
+                <div class="subcard-row">
+                  <strong>${p.name}</strong>
+                </div>
+                <div class="subcard-row">
+                  <span><b>Qtd:</b> ${p.quantity}</span>
+                  <span><b>Unitário:</b> R$${p.salePrice ?? 0}</span>
+                  <span><b>Total:</b> R$${(p.salePrice ?? 0) * (p.quantity ?? 0)}</span>
+                </div>
+              </div>`
+    )
+    .join('')}
+        </div>`
     : '<p>Nenhum produto registrado.</p>'
 }
-    </div>
+</div>
 
     <!-- DESCONTOS -->
     <div class="card">
@@ -590,10 +678,5 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     await browser.close()
 
     return pdfBuffer
-  }
-
-  private formatDate (date?: Date) {
-    if (!date) return '-'
-    return new Date(date).toLocaleDateString('pt-BR')
   }
 }
