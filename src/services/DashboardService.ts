@@ -9,6 +9,7 @@ import BuyRepository from '../repositories/BuyRepository'
 import ClientRepository from '../repositories/ClientRepository'
 import DashboardRepository from '../repositories/DashboardRepository'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
+import Time from '../utils/Time'
 import BaseService from './BaseService'
 
 export default class DashboardService extends BaseService<IDashboard> {
@@ -296,7 +297,7 @@ export default class DashboardService extends BaseService<IDashboard> {
     </div>
 
     <h1>📊 Relatório do Dashboard</h1>
-    <p>Período: <strong>${this.formatDate(startDate)} a ${this.formatDate(endDate)}</strong></p>
+    <p>Período: <strong>${Time.formatDateToBR(startDate)} a ${Time.formatDateToBR(endDate)}</strong></p>
 
     <!-- FATURAMENTO -->
     <div class="card">
@@ -367,10 +368,5 @@ export default class DashboardService extends BaseService<IDashboard> {
     await browser.close()
 
     return pdfBuffer
-  }
-
-  private formatDate (date?: Date) {
-    if (!date) return '-'
-    return new Date(date).toLocaleDateString('pt-BR')
   }
 }

@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 
 import DashboardService from '../../services/DashboardService'
 import ServiceOrderService from '../../services/ServiceOrderService'
-import { convertDatesToYearAndMonth } from '../../utils/ConvertDatesToYearAndMonth'
+import Time from '../../utils/Time'
 
 export default class DashboardController {
   private dashboardService: DashboardService
@@ -17,7 +17,7 @@ export default class DashboardController {
     try {
       const { date } = req.query
 
-      const { startDate, endDate } = await convertDatesToYearAndMonth(date?.toString())
+      const { startDate, endDate } = Time.convertDatesToYearAndMonth(date?.toString())
 
       const dashboards = await this.dashboardService.getDashboardDatas(startDate, endDate)
 
@@ -62,7 +62,7 @@ export default class DashboardController {
   exportReportToPDF = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { date } = req.query
-      const { startDate, endDate } = await convertDatesToYearAndMonth(date?.toString())
+      const { startDate, endDate } = Time.convertDatesToYearAndMonth(date?.toString())
       const pdfBuffer = await this.dashboardService.generateDashboardPDF(startDate, endDate)
 
       res.setHeader('Content-Type', 'application/pdf')

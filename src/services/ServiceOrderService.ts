@@ -11,6 +11,7 @@ import User from '../models/User'
 import { IVehicle } from '../models/Vehicle'
 import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
+import Time from '../utils/Time'
 import BaseService from './BaseService'
 import DashboardService from './DashboardService'
 import ProductService from './ProductService'
@@ -415,11 +416,11 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
         </div>
         <div class="field">
           <label>Entrada do veículo</label>
-          <div class="field-value">${this.formatDate(serviceOrder.entryDate)}</div>
+          <div class="field-value">${Time.formatDateToBR(serviceOrder.entryDate)}</div>
         </div>
         <div class="field">
           <label>Previsão de entrega</label>
-          <div class="field-value">${this.formatDate(serviceOrder.deadline)}</div>
+          <div class="field-value">${Time.formatDateToBR(serviceOrder.deadline)}</div>
         </div>
       </div>
     </div>
