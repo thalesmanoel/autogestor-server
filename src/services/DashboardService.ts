@@ -192,7 +192,7 @@ export default class DashboardService extends BaseService<IDashboard> {
     const { billingTotalValue, totalCost, grossProfit, quantityNewClients } = dashboardData
 
     // ====== Logo ======
-    const logoPath = path.resolve('src/utils/logoDoOs.png')
+    const logoPath = path.resolve('src/utils/images/logoDoOs.png')
     const logoBase64 = fs.existsSync(logoPath)
       ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`
       : ''

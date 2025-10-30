@@ -303,7 +303,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     }
 
     // ====== Logo ======
-    const logoPath = path.resolve('src/utils/logoDoOs.png')
+    const logoPath = path.resolve('src/utils/images/logoDoOs.png')
     const logoBase64 = fs.existsSync(logoPath)
       ? `data:image/png;base64,${fs.readFileSync(logoPath).toString('base64')}`
       : ''
