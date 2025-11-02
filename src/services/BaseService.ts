@@ -1,4 +1,4 @@
-import { Document, Types } from 'mongoose'
+import { Document, FilterQuery, Types } from 'mongoose'
 
 import BaseRepository from '../repositories/BaseRepository'
 
@@ -15,6 +15,10 @@ export default class BaseService<T extends Document> {
 
   async findAll () {
     return this.repository.findAll()
+  }
+
+  async findManyWithSelect (filter: FilterQuery<T>, select: string) {
+    return this.repository.findManyWithSelect(filter, select)
   }
 
   async findById (id: Types.ObjectId) {

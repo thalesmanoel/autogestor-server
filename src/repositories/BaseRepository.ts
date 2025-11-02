@@ -23,8 +23,12 @@ export default class BaseRepository<T extends Document> {
     return this.model.findOne(filter)
   }
 
-  findById (id: Types.ObjectId) {
+  async findById (id: Types.ObjectId) {
     return this.model.findById(id)
+  }
+
+  async findManyWithSelect (filter: FilterQuery<T>, select: string): Promise<T[]> {
+    return this.model.find(filter).select(select)
   }
 
   async updateOne (filter: FilterQuery<T>, data: Partial<T>, upsert = false): Promise<T | null> {

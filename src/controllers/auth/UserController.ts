@@ -21,7 +21,7 @@ export default class UserController {
 
   getAll = async (_req: Request, res: Response, next: NextFunction) => {
     try {
-      const users = await this.userService.findAll()
+      const users = await this.userService.findManyWithSelect({}, 'name email cellphone role manager')
       res.json(users)
     } catch (error) {
       next(error)
