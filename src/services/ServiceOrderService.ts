@@ -7,7 +7,7 @@ import OrderServiceStatus from '../enums/OrderServiceStatus'
 import Role from '../enums/Role'
 import { IClient } from '../models/Client'
 import Mechanic from '../models/Mechanic'
-import { IServiceOrder } from '../models/ServiceOrder'
+import ServiceOrder, { IServiceOrder } from '../models/ServiceOrder'
 import User from '../models/User'
 import { IVehicle } from '../models/Vehicle'
 import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
@@ -280,7 +280,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
   }
 
   async generateServiceOrderPDF (id: Types.ObjectId): Promise<any> {
-    const serviceOrder = await this.serviceOrderRepository.findById(id)
+    const serviceOrder = await ServiceOrder.findById(id)
       .populate('clientId')
       .populate('vehicleId')
       .lean()
