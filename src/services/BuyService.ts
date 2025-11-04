@@ -28,7 +28,6 @@ export default class BuyService extends BaseService<IBuy> {
       serviceOrder = await this.serviceOrderRepository.findById(data.serviceOrderId)
       if (!serviceOrder) throw new Error('ID da ordem de serviço não encontrado')
 
-      // OS fica aguardando produtos
       serviceOrder.status = OrderServiceStatus.PENDING_PRODUCT
       await serviceOrder.save()
     }
@@ -44,7 +43,6 @@ export default class BuyService extends BaseService<IBuy> {
     const previousStatus = buy.status
     Object.assign(buy, data)
 
-    // salva as alterações direto no documento, em vez de chamar update
     await buy.save()
 
     let serviceOrder = null
@@ -106,7 +104,7 @@ export default class BuyService extends BaseService<IBuy> {
       if (serviceOrder && serviceOrder.status !== OrderServiceStatus.CANCELED) {
         const totals = await new ServiceOrderService().calculateTotals(serviceOrder)
         Object.assign(serviceOrder, totals)
-        serviceOrder.status = OrderServiceStatus.PENDING
+        serviceOrder.status = OrderServiceStatus.IN_PROGRESS
         await serviceOrder.save()
       }
     }
