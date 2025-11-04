@@ -311,13 +311,18 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     const client = serviceOrder.clientId as IClient
     const vehicle = serviceOrder.vehicleId as IVehicle
 
-    const statusTranslated = {
+    const statusTranslated: Record<string, string> = {
       [OrderServiceStatus.REQUEST]: 'Solicitação',
       [OrderServiceStatus.PENDING_PRODUCT]: 'Pendente de Produto',
       [OrderServiceStatus.BUDGET]: 'Orçamento',
       [OrderServiceStatus.IN_PROGRESS]: 'Em Progresso',
       [OrderServiceStatus.COMPLETED]: 'Concluída',
       [OrderServiceStatus.CANCELED]: 'Cancelada'
+    }
+
+    const discountTypeTranslated: Record<string, string> = {
+      percent: 'Porcentagem',
+      real: 'Real'
     }
 
     // ====== Logo ======
@@ -585,7 +590,6 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
                 <div class="subcard-row">
                   <span><b>Duração:</b> ${s.workHours}h</span>
                   <span><b>Qtd:</b> ${s.quantity}</span>
-                  <span><b>Valor/h:</b> R$${s.hourValue}</span>
                   <span><b>Total:</b> R$${s.totalValue}</span>
                 </div>
                 ${
@@ -632,7 +636,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       <h2>💰 Descontos</h2>
       ${
   serviceOrder.discountType
-    ? `<p><b>Tipo:</b> ${serviceOrder.discountType}</p><p><b>Valor:</b> ${serviceOrder.discountValue}</p>`
+    ? `<p><b>Tipo:</b> ${discountTypeTranslated[serviceOrder.discountType]}</p><p><b>Valor:</b> R$${serviceOrder.discountValue}</p>`
     : '<p>Sem descontos aplicados.</p>'
 }
     </div>
