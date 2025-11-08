@@ -10,6 +10,7 @@ export interface IProductItem {
   totalQuantity?: number;
   costUnitPrice?: number;
   salePrice?: number;
+  totalValue?: number;
   grossProfitMargin?: number;
   providerIds?: Types.ObjectId[];
 }
@@ -25,6 +26,7 @@ export const ProductItemSchema = new Schema<IProductItem>(
     totalQuantity: { type: Number },
     costUnitPrice: { type: Number },
     salePrice: { type: Number },
+    totalValue: { type: Number },
     grossProfitMargin: { type: Number },
     providerIds: { type: [Schema.Types.ObjectId] }
   },

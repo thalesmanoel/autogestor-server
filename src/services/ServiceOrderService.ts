@@ -29,22 +29,19 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     this.dashboardService = new DashboardService()
   }
 
-  async calculateTotals (data: IServiceOrder): Promise<IServiceOrder> {
+  async calculateTotals (data: any): Promise<IServiceOrder> {
     let totalProducts = 0
 
     if (data.products && data.products.length > 0) {
       for (const item of data.products) {
-        if (!item.productId) continue // só calcula quando já tem produto real
-
-        const unitPrice = item.salePrice ?? item.costUnitPrice ?? 0
-        totalProducts += unitPrice * (item.quantity ?? 0)
+        totalProducts += item.totalValue ?? 0
       }
     }
 
     let totalServices = 0
     if (data.services && data.services.length > 0) {
       for (const item of data.services) {
-        totalServices += item.totalValue * item.quantity
+        totalServices += item.totalValue
       }
     }
 

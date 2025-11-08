@@ -64,6 +64,19 @@ export default class ServiceOrderController {
     }
   }
 
+  calculateTotalServiceOrderValue = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const { services, products, discountType, discountValue } = req.body
+
+      const data = { services, products, discountType, discountValue }
+
+      const totalValue = await this.serviceOrderService.calculateTotals(data)
+      res.status(200).json({ totalValue })
+    } catch (error) {
+      next(error)
+    }
+  }
+
   changeStatus = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { id } = req.params

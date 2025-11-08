@@ -15,6 +15,7 @@ router.delete('/:id', serviceOrderController.delete)
 
 router.put('/change-status/:id', serviceOrderController.changeStatus)
 router.put('/update-paid/:id', serviceOrderController.updatePaidStatus)
+router.post('/calculate-totals', serviceOrderController.calculateTotalServiceOrderValue)
 
 router.get('/export-pdf/:id', serviceOrderController.exportServiceOrderAsPDF)
 
