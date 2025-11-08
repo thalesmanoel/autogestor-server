@@ -3,7 +3,7 @@ import { Schema, Types } from 'mongoose'
 export interface IProductItem {
   productId?: Types.ObjectId;
   code?: number;
-  name: string;
+  name?: string;
   quantity?: number; // quantidade efetiva utilizada na OS
   quantityToServiceOrder?: number; // quantidade a ser adicionada na OS
   quantityToStock?: number; // quantidade a ser adicionada no estoque
@@ -18,7 +18,7 @@ export const ProductItemSchema = new Schema<IProductItem>(
   {
     productId: { type: Schema.Types.ObjectId },
     code: { type: Number },
-    name: { type: String, required: true },
+    name: { type: String },
     quantity: { type: Number },
     quantityToServiceOrder: { type: Number },
     quantityToStock: { type: Number },
