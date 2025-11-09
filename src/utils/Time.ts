@@ -21,4 +21,20 @@ export default class Time {
     if (!date) return '-'
     return new Date(date).toLocaleDateString('pt-BR')
   }
+
+  static getStartOfDay (date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+  }
+
+  static getEndOfDay (date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
+  }
+
+  static getStartOfMonth (date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
+  }
+
+  static getEndOfMonth (date: Date): Date {
+    return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
+  }
 }

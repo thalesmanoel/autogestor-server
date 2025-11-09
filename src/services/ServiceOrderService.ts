@@ -17,6 +17,16 @@ import BaseService from './BaseService'
 import DashboardService from './DashboardService'
 import ProductService from './ProductService'
 
+type DateToFilter = Date | { $gte: Date, $lte: Date }
+
+type InputFilters = {
+  entryDate?: DateToFilter,
+  clientId?: Types.ObjectId,
+  code?: string,
+  status?: OrderServiceStatus,
+  paid?: boolean
+}
+
 export default class ServiceOrderService extends BaseService<IServiceOrder> {
   private productService: ProductService
   private serviceOrderRepository: ServiceOrderRepository
@@ -27,6 +37,28 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     this.productService = new ProductService()
     this.serviceOrderRepository = new ServiceOrderRepository()
     this.dashboardService = new DashboardService()
+  }
+
+  async findServiceOrdersFilters (filters?: InputFilters): Promise<IServiceOrder[]> {
+    if (!filters || Object.values(filters).every(value => value === undefined)) {
+      return this.serviceOrderRepository.findAll()
+    }
+
+    if (filters.entryDate) {
+      const startOfDay = Time.getStartOfDay(filters.entryDate as Date)
+      const endOfDay = Time.getEndOfDay(filters.entryDate as Date)
+      filters.entryDate = { $gte: startOfDay, $lte: endOfDay }
+    }
+
+    const cleanFilters = Object.fromEntries(
+      Object.entries(filters).filter(([_, value]) => value !== undefined)
+    )
+
+    const pipeline: any[] = [
+      { $match: cleanFilters }
+    ]
+    console.log('Pipeline:', JSON.stringify(pipeline, null, 2))
+    return this.serviceOrderRepository.aggregateMany(pipeline)
   }
 
   async calculateTotals (data: any): Promise<IServiceOrder> {

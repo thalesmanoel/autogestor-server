@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 import { Types } from 'mongoose'
 
+import OrderServiceStatus from '../../enums/OrderServiceStatus'
 import { stopOrderDeadlineJob } from '../../queues/OrderDeadlineQueue'
 import ServiceOrderService from '../../services/ServiceOrderService'
 
@@ -20,9 +21,21 @@ export default class ServiceOrderController {
     }
   }
 
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const serviceOrders = await this.serviceOrderService.findAll()
+      const { clientId, status, date, code, paid } = req.query
+      console.log('Received query params:', req.query)
+      const filters = {
+        clientId: clientId ? new Types.ObjectId(clientId as string) : undefined,
+        status: status ? (status as OrderServiceStatus) : undefined,
+        entryDate: date ? new Date(date as string) : undefined,
+        code: code ? (code as string) : undefined,
+        paid: paid !== undefined ? paid === 'true' : false
+      }
+
+      console.log('Filters received:', filters)
+
+      const serviceOrders = await this.serviceOrderService.findServiceOrdersFilters(filters)
       res.json(serviceOrders)
     } catch (error) {
       next(error)
