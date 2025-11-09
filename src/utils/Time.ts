@@ -1,3 +1,10 @@
+import dayjs from 'dayjs'
+import timezone from 'dayjs/plugin/timezone'
+import utc from 'dayjs/plugin/utc'
+
+dayjs.extend(utc)
+dayjs.extend(timezone)
+
 export default class Time {
   static convertDatesToYearAndMonth (date?: string) {
     if (!date) {
@@ -23,18 +30,26 @@ export default class Time {
   }
 
   static getStartOfDay (date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0, 0, 0, 0)
+    const start = new Date(date)
+    start.setUTCDate(start.getUTCDate() - 1)
+    start.setUTCHours(21, 0, 0, 0)
+    return start
   }
 
   static getEndOfDay (date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23, 59, 59, 999)
+    const end = new Date(date)
+    end.setUTCHours(20, 59, 59, 999)
+    return end
   }
 
   static getStartOfMonth (date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth(), 1, 0, 0, 0, 0)
+    const first = new Date(Date.UTC(date.getFullYear(), date.getMonth(), 1, 21, 0, 0, 0))
+    return first
   }
 
   static getEndOfMonth (date: Date): Date {
-    return new Date(date.getFullYear(), date.getMonth() + 1, 0, 23, 59, 59, 999)
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0)
+    const end = new Date(Date.UTC(lastDay.getFullYear(), lastDay.getMonth(), lastDay.getDate(), 20, 59, 59, 999))
+    return end
   }
 }
