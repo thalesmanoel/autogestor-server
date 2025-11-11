@@ -59,10 +59,9 @@ export default class BaseService<T extends Document> {
     if (identifier && search) {
       const match: any = {}
       if (identifier === 'code') {
-        Number(search)
-        match[identifier] = { $regex: search, $options: 'i' }
+        match[identifier] = Number(search)
       } else {
-        match[identifier] = search
+        match[identifier] = { $regex: search, $options: 'i' }
       }
       pipeline.push({ $match: match })
     }
