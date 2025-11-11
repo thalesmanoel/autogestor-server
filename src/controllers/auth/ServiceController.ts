@@ -19,10 +19,18 @@ export default class ServiceController {
     }
   }
 
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const services = await this.serviceListService.findAll()
-      res.json(services)
+      const { identifier, search, page, limit, date } = req.query
+
+      const services = await this.serviceListService.aggregatePaginate(
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined,
+        date ? new Date(String(date)) : undefined,
+        identifier ? String(identifier) : undefined,
+        search ? String(search) : undefined
+      )
+      res.json(services.data)
     } catch (error) {
       next(error)
     }

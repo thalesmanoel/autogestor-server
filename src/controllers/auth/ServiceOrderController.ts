@@ -24,7 +24,6 @@ export default class ServiceOrderController {
   getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const { clientId, status, date, code, paid } = req.query
-      console.log('Received query params:', req.query)
       const filters = {
         clientId: clientId ? new Types.ObjectId(clientId as string) : undefined,
         status: status ? (status as OrderServiceStatus) : undefined,
@@ -32,8 +31,6 @@ export default class ServiceOrderController {
         code: code ? (code as string) : undefined,
         paid: paid !== undefined ? paid === 'true' : false
       }
-
-      console.log('Filters received:', filters)
 
       const serviceOrders = await this.serviceOrderService.findServiceOrdersFilters(filters)
       res.json(serviceOrders)

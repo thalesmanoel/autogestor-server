@@ -19,10 +19,18 @@ export default class MechanicController {
     }
   }
 
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const mechanics = await this.mechanicService.findAll()
-      res.json(mechanics)
+      const { identifier, search, page, limit, date } = req.query
+
+      const mechanics = await this.mechanicService.aggregatePaginate(
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined,
+        date ? new Date(String(date)) : undefined,
+        identifier ? String(identifier) : undefined,
+        search ? String(search) : undefined
+      )
+      res.json(mechanics.data)
     } catch (error) {
       next(error)
     }

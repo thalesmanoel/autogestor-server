@@ -19,10 +19,18 @@ export default class ClientController {
     }
   }
 
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const clients = await this.clientService.findAll()
-      res.json(clients)
+      const { identifier, search, page, limit, date } = req.query
+
+      const clients = await this.clientService.aggregatePaginate(
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined,
+        date ? new Date(String(date)) : undefined,
+        identifier ? String(identifier) : undefined,
+        search ? String(search) : undefined
+      )
+      res.json(clients.data)
     } catch (error) {
       next(error)
     }

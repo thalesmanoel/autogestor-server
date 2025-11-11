@@ -28,10 +28,18 @@ export default class BuyController {
     }
   }
 
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const buys = await this.buyService.findAll()
-      res.json(buys)
+      const { identifier, search, page, limit, date } = req.query
+
+      const buys = await this.buyService.aggregatePaginate(
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined,
+        date ? new Date(String(date)) : undefined,
+        identifier ? String(identifier) : undefined,
+        search ? String(search) : undefined
+      )
+      res.json(buys.data)
     } catch (error) {
       next(error)
     }

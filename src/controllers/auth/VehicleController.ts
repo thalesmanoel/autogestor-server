@@ -19,10 +19,18 @@ export default class VehicleController {
     }
   }
 
-  getAll = async (_req: Request, res: Response, next: NextFunction) => {
+  getAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const vehicles = await this.vehicleService.findAll()
-      res.json(vehicles)
+      const { identifier, search, page, limit, date } = req.query
+
+      const vehicles = await this.vehicleService.aggregatePaginate(
+        page ? Number(page) : undefined,
+        limit ? Number(limit) : undefined,
+        date ? new Date(String(date)) : undefined,
+        identifier ? String(identifier) : undefined,
+        search ? String(search) : undefined
+      )
+      res.json(vehicles.data)
     } catch (error) {
       next(error)
     }
