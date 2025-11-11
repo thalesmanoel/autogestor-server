@@ -51,7 +51,7 @@ export default class BaseRepository<T extends Document> {
     return this.model.aggregate(pipeline)
   }
 
-  async aggregatePaginate (pipeline: any[], page = 1, limit = 10) {
+  async aggregatePaginate (pipeline: any[], page: number, limit: number) {
     const skip = (page - 1) * limit
 
     const result = await this.model.aggregate([

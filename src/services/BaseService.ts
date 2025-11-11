@@ -58,10 +58,11 @@ export default class BaseService<T extends Document> {
 
     if (identifier && search) {
       const match: any = {}
-      if (isNaN(Number(search))) {
+      if (identifier === 'code') {
+        Number(search)
         match[identifier] = { $regex: search, $options: 'i' }
       } else {
-        match[identifier] = Number(search)
+        match[identifier] = search
       }
       pipeline.push({ $match: match })
     }
