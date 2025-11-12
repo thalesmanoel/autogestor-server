@@ -10,9 +10,17 @@ import routes from './routes'
 const app = express()
 app.use(express.json())
 
+const allowedOrigins = process.env.FRONTEND_LOCAL?.split(',') || []
+
 app.use(
   cors({
-    origin: process.env.FRONTEND_LOCAL,
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true)
+      } else {
+        callback(new Error('Origem não permitida pelo CORS'))
+      }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
     allowedHeaders: ['Content-Type', 'Authorization']
   })

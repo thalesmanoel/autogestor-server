@@ -56,14 +56,28 @@ export default class BaseService<T extends Document> {
       })
     }
 
-    if (identifier && search) {
-      const match: any = {}
-      if (identifier === 'code') {
-        match[identifier] = Number(search)
+    if (identifier && search !== undefined) {
+      const numericFields = new Set([
+        'code',
+        'workHours',
+        'hourValue',
+        'totalValue',
+        'quantity',
+        'km',
+        'year'
+      ])
+
+      let matchValue: any
+
+      if (search === 'true' || search === 'false') {
+        matchValue = search === 'true'
+      } else if (numericFields.has(identifier) && !isNaN(Number(search))) {
+        matchValue = Number(search)
       } else {
-        match[identifier] = { $regex: search, $options: 'i' }
+        matchValue = { $regex: search, $options: 'i' }
       }
-      pipeline.push({ $match: match })
+
+      pipeline.push({ $match: { [identifier]: matchValue } })
     }
 
     pipeline.push({ $sort: { createdAt: -1 } })
