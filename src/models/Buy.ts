@@ -12,6 +12,7 @@ export interface IBuy extends Document {
   deliveredDate?: Date;
   requestDate?: Date;
   serviceOrderId?: Types.ObjectId;
+  serviceOrderCode?: number;
   status?: RequestBuyStatus;
   totalValue?: number;
   userId: Types.ObjectId;
@@ -27,6 +28,7 @@ const BuySchema = new Schema<IBuy>(
     deliveredDate: { type: Date },
     requestDate: { type: Date, default: Date.now },
     serviceOrderId: { type: Schema.Types.ObjectId },
+    serviceOrderCode: { type: Number },
     status: { type: String, enum: Object.values(RequestBuyStatus) },
     totalValue: { type: Number },
     userId: { type: Schema.Types.ObjectId, required: true }

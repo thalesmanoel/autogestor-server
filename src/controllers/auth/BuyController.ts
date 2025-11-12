@@ -19,6 +19,7 @@ export default class BuyController {
       const userId = req.user.id
       const data = req.body
       data.serviceOrderId = new Types.ObjectId(data.serviceOrderId)
+      data.serviceOrderCode = Number(data.serviceOrderCode)
       data.userId = new Types.ObjectId(userId)
 
       const buy = await this.buyService.createBuy(data)
