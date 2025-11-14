@@ -172,7 +172,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
 
     order.paid = paid
     order.paymentDate = paid ? new Date() : undefined
-    order.paymentType = paymentType || 'não informado'
+    order.paymentType = paymentType || undefined
     await order.save()
 
     if (paid) {

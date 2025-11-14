@@ -19,7 +19,6 @@ export interface IServiceOrder extends Document {
   entryDate?: Date;
   deadline?: Date;
   completionDate?: Date;
-  pickupDate?: Date;
   discountType?: string;
   discountValue?: number;
   totalValueProducts?: number;
@@ -44,7 +43,6 @@ const ServiceOrderSchema = new Schema<IServiceOrder>(
     entryDate: { type: Date },
     deadline: { type: Date },
     completionDate: { type: Date },
-    pickupDate: { type: Date },
     totalValueProducts: { type: Number },
     totalValueServices: { type: Number },
     totalValueGeneral: { type: Number },

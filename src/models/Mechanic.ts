@@ -8,7 +8,7 @@ export interface IMechanic extends Document {
     position: string;
     cep: string;
     address: string;
-    number: string;
+    number: number;
     city: string;
     state: string;
     notes?: string;
@@ -23,7 +23,7 @@ const MechanicSchema = new Schema<IMechanic>(
     position: { type: String, required: true },
     cep: { type: String, required: true },
     address: { type: String, required: true },
-    number: { type: String, required: true },
+    number: { type: Number, required: true },
     city: { type: String, required: true },
     state: { type: String, required: true },
     notes: { type: String }
