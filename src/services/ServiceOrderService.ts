@@ -174,10 +174,6 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     order.paymentDate = paid ? new Date() : undefined
     order.paymentType = paymentType || undefined
     await order.save()
-
-    if (paid) {
-      await this.dashboardService.incrementMonthlyDashboard(order)
-    }
   }
 
   async configureOrderDeadlineJob (hour: number, minute: number) {
@@ -188,7 +184,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     const userEmails = await User.find({
       $or: [
         { role: Role.ADMIN },
-        { role: Role.EMPLOYER, manager: true }
+        { role: Role.MANAGER }
       ]
     }).select('email')
       .lean()

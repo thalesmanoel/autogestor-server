@@ -3,23 +3,17 @@ import path from 'path'
 import puppeteer from 'puppeteer'
 
 import RequestBuyStatus from '../enums/RequestBuyStatus'
-import { IDashboard } from '../models/Dashboard'
-import { IServiceOrder } from '../models/ServiceOrder'
 import BuyRepository from '../repositories/BuyRepository'
 import ClientRepository from '../repositories/ClientRepository'
-import DashboardRepository from '../repositories/DashboardRepository'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import Time from '../utils/Time'
-import BaseService from './BaseService'
 
-export default class DashboardService extends BaseService<IDashboard> {
-  private dashboardRepository: DashboardRepository
+export default class DashboardService {
   private serviceOrderRepository: ServiceOrderRepository
   private buyRepository: BuyRepository
   private clientRepository: ClientRepository
+
   constructor () {
-    super(new DashboardRepository())
-    this.dashboardRepository = new DashboardRepository()
     this.serviceOrderRepository = new ServiceOrderRepository()
     this.buyRepository = new BuyRepository()
     this.clientRepository = new ClientRepository()
@@ -138,49 +132,52 @@ export default class DashboardService extends BaseService<IDashboard> {
     return result.length > 0 ? result[0].quantityNewClients : 0
   }
 
-  async incrementMonthlyDashboard (order: IServiceOrder) {
-    if (!order.paid || !order.paymentDate) return
-
-    const year = order.paymentDate.getFullYear()
-    const month = order.paymentDate.getMonth() + 1
-
-    await this.dashboardRepository.updateWithOperators(
-      { year, month },
-      {
-        $inc: { billingTotalValue: order.totalValueGeneral || 0 },
-        $setOnInsert: { year, month }
-      },
-      true
-    )
-  }
-
   async getLastMonthsBilling (year?: number) {
     const now = new Date()
     const start = new Date(now.getFullYear(), now.getMonth() - 11, 1)
-    const matchStage: any = {}
 
-    if (year) {
-      matchStage.year = year
-    } else {
-      matchStage.year = { $gte: start.getFullYear() }
-      matchStage.$expr = {
-        $gte: [
-          { $dateFromParts: { year: '$year', month: '$month', day: 1 } },
-          start
-        ]
-      }
+    const match: any = {
+      paid: true
     }
 
-    const result = await this.dashboardRepository.aggregateMany([
-      { $match: matchStage },
+    if (year) {
+      match.paymentDate = {
+        $gte: new Date(year, 0, 1),
+        $lte: new Date(year, 11, 31, 23, 59, 59, 999)
+      }
+    } else {
+      match.paymentDate = { $gte: start }
+    }
+
+    const result = await this.serviceOrderRepository.aggregateMany([
+      { $match: match },
+
+      {
+        $project: {
+          year: { $year: '$paymentDate' },
+          month: { $month: '$paymentDate' },
+          billing: {
+            $ifNull: ['$totalValueWithDiscount', '$totalValueGeneral']
+          }
+        }
+      },
+
+      {
+        $group: {
+          _id: { year: '$year', month: '$month' },
+          totalBilling: { $sum: '$billing' }
+        }
+      },
+
       {
         $project: {
           _id: 0,
-          year: 1,
-          month: 1,
-          totalBilling: '$billingTotalValue'
+          year: '$_id.year',
+          month: '$_id.month',
+          totalBilling: 1
         }
       },
+
       { $sort: { year: 1, month: 1 } }
     ])
 
