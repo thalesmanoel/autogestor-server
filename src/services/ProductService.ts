@@ -14,7 +14,7 @@ export default class ProductService extends BaseService<IProduct> {
   }
 
   async createProduct (data: Partial<IProduct>): Promise<ProductDoc> {
-    data.code = await this.productRepository.getNextSequence('productCode')
+    data.code = await this.productRepository.getNextProductCode()
     return this.productRepository.create(data)
   }
 }
