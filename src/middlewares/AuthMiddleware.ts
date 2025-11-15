@@ -8,7 +8,6 @@ interface IJwtPayload {
   name: string;
   email: string;
   role: Role;
-  manager: boolean;
 }
 
 declare global {

@@ -10,7 +10,7 @@ const SECRET = process.env.JWT_SECRET || 'minha_chave_secreta'
 export default class SigninController {
   register = async (req: Request, res: Response) => {
     try {
-      const { name, email, cellphone, password, role, manager } = req.body
+      const { name, email, cellphone, password, role } = req.body
 
       const hashedPassword = await bcrypt.hash(password, 10)
 
@@ -19,8 +19,7 @@ export default class SigninController {
         email,
         password: hashedPassword,
         cellphone,
-        role: role || Role.EMPLOYER,
-        manager: manager || false
+        role: role || Role.EMPLOYER
       })
 
       res.status(201).json({ message: 'Usuário criado com sucesso', user })
@@ -43,7 +42,7 @@ export default class SigninController {
       if (!match) return res.status(401).json({ message: 'Senha incorreta' })
 
       const token = jwt.sign(
-        { id: user._id, email: user.email, role: user.role, manager: user.manager },
+        { id: user._id, email: user.email, role: user.role },
         SECRET,
         { expiresIn: '1d' }
       )
