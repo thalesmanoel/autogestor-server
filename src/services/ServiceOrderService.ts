@@ -111,7 +111,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
       }
     }
 
-    const serviceOrderCode = await this.serviceOrderRepository.getNextSequence('serviceOrderCode')
+    const serviceOrderCode = await this.serviceOrderRepository.getNextServiceOrderCode()
 
     data.code = `OS-${serviceOrderCode}`
 

@@ -1,7 +1,5 @@
 import { Document, FilterQuery, HydratedDocument, Model, Types } from 'mongoose'
 
-import Counter from '../models/Counter'
-
 export type BaseDoc<T> = HydratedDocument<T>
 
 export default class BaseRepository<T extends Document> {
@@ -74,14 +72,5 @@ export default class BaseRepository<T extends Document> {
       limit,
       totalPages: Math.ceil(total / limit)
     }
-  }
-
-  async getNextSequence (name: string): Promise<number> {
-    const counter = await Counter.findByIdAndUpdate(
-      name,
-      { $inc: { seq: 1 } },
-      { new: true, upsert: true }
-    )
-    return counter.seq
   }
 }
