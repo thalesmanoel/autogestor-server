@@ -23,7 +23,7 @@ export default class UserController {
     try {
       const { identifier, search, page, limit, date } = req.query
 
-      const users = await this.userService.findAllPaginated(
+      const users = await this.userService.aggregatePaginate(
         page ? Number(page) : undefined,
         limit ? Number(limit) : undefined,
         date ? new Date(String(date)) : undefined,
