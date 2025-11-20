@@ -29,7 +29,7 @@ export default class ServiceOrderController {
         status: status ? (status as OrderServiceStatus) : undefined,
         entryDate: date ? new Date(date as string) : undefined,
         code: code ? (code as string) : undefined,
-        paid: paid !== undefined ? paid === 'true' : false
+        paid: paid !== undefined ? paid === 'true' : undefined
       }
 
       const serviceOrders = await this.serviceOrderService.findServiceOrdersFilters(filters)
