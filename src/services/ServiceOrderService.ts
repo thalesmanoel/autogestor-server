@@ -14,7 +14,6 @@ import { scheduleOrderDeadlineJob } from '../queues/OrderDeadlineQueue'
 import ServiceOrderRepository from '../repositories/ServiceOrderRepository'
 import Time from '../utils/Time'
 import BaseService from './BaseService'
-import DashboardService from './DashboardService'
 import ProductService from './ProductService'
 
 type DateToFilter = Date | { $gte: Date, $lte: Date }
@@ -30,13 +29,11 @@ type InputFilters = {
 export default class ServiceOrderService extends BaseService<IServiceOrder> {
   private productService: ProductService
   private serviceOrderRepository: ServiceOrderRepository
-  private dashboardService: DashboardService
 
   constructor () {
     super(new ServiceOrderRepository())
     this.productService = new ProductService()
     this.serviceOrderRepository = new ServiceOrderRepository()
-    this.dashboardService = new DashboardService()
   }
 
   async findServiceOrdersFilters (filters?: InputFilters): Promise<IServiceOrder[]> {
@@ -693,6 +690,33 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     ? `<div class="field"><label>Total com Desconto</label><div class="field-value">R$ ${serviceOrder.totalValueWithDiscount.toFixed(2)}</div></div>`
     : ''
 }
+      </div>
+    </div>
+    <!-- PAGAMENTOS -->
+    <div class="card">
+      <h2>💵 Pagamento</h2>
+
+      <div class="grid">
+        <div class="field">
+          <label>Pago?</label>
+          <div class="field-value">
+            ${serviceOrder.paid ? 'Sim' : 'Não'}
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Forma de Pagamento</label>
+          <div class="field-value">
+            ${serviceOrder.paymentType ?? '-'}
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Data do Pagamento</label>
+          <div class="field-value">
+            ${serviceOrder.paymentDate ? Time.formatDateToBR(serviceOrder.paymentDate) : '-'}
+          </div>
+        </div>
       </div>
     </div>
   </body>
