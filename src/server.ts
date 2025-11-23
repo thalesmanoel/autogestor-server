@@ -2,7 +2,7 @@ import 'dotenv/config'
 import './queues/OrderDeadlineQueue'
 
 import cors from 'cors'
-import express from 'express'
+import express, { NextFunction, Request, Response } from 'express'
 
 import Database from './config/Database'
 import routes from './routes'
@@ -32,8 +32,21 @@ const PORT = Number(process.env.PORT) || 3000
 
 app.use('/', routes)
 
-app.get('/', (_req, res) => {
+app.get('/', (_req: Request, res: Response) => {
   res.send('API rodando 🚀')
+})
+
+// eslint-disable-next-line unused-imports/no-unused-vars
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  console.error('ERRO NO SERVIDOR:', err)
+
+  const status = err.status || 400
+  const message = err.message || 'Erro interno no servidor'
+
+  res.status(status).json({
+    success: false,
+    message
+  })
 })
 
 app.listen(PORT, '0.0.0.0', () => {
