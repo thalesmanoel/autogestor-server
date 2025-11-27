@@ -41,6 +41,18 @@ export default class BuyService extends BaseService<IBuy> {
     if (!buy) throw new Error('Solicitação de compra não encontrada')
 
     const previousStatus = buy.status
+    if (data.products) {
+      data.products = data.products.map((newItem) => {
+        const oldItem = buy.products.find(
+          p => String(p.productId) === String(newItem.productId)
+        )
+
+        return {
+          ...newItem,
+          observations: newItem.observations ?? oldItem?.observations ?? ''
+        }
+      })
+    }
     Object.assign(buy, data)
 
     await buy.save()

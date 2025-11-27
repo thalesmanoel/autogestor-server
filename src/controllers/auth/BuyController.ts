@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 import { Types } from 'mongoose'
 
 import BuyService from '../../services/BuyService'
+import { normalize, normalizeMany } from '../../utils/formatJson'
 
 export default class BuyController {
   private buyService: BuyService
@@ -24,7 +25,7 @@ export default class BuyController {
       data.userId = userId ? new Types.ObjectId(userId) : undefined
 
       const buy = await this.buyService.createBuy(data)
-      res.status(201).json(buy)
+      res.status(201).json(normalize(buy))
     } catch (error) {
       next(error)
     }
@@ -41,7 +42,8 @@ export default class BuyController {
         identifier ? String(identifier) : undefined,
         search ? String(search) : undefined
       )
-      res.json(buys.data)
+
+      res.json(normalizeMany(buys.data))
     } catch (error) {
       next(error)
     }
@@ -51,7 +53,7 @@ export default class BuyController {
     try {
       const buy = await this.buyService.findById(new Types.ObjectId(req.params.id))
       if (buy === null) return res.status(404).json({ message: 'Produto não encontrado' })
-      res.json(buy)
+      res.json(normalize(buy))
     } catch (error) {
       next(error)
     }
@@ -64,7 +66,7 @@ export default class BuyController {
 
       const buy = await this.buyService.updateBuy(new Types.ObjectId(id), data)
       if (!buy) return res.status(404).json({ message: 'Produto não encontrado' })
-      res.json(buy)
+      res.json(normalize(buy))
     } catch (error) {
       next(error)
     }
@@ -74,7 +76,7 @@ export default class BuyController {
     try {
       const { productId } = req.params
       const history = await this.buyService.getProductHistory(new Types.ObjectId(productId))
-      res.json(history)
+      res.json(normalizeMany(history))
     } catch (error) {
       next(error)
     }
@@ -87,10 +89,17 @@ export default class BuyController {
 
       const changedAuthorizationByUser = req.user?.id
 
-      const buy = await this.buyService.authorize(new Types.ObjectId(id), authorization, new Types.ObjectId(changedAuthorizationByUser))
+      const buy = await this.buyService.authorize(
+        new Types.ObjectId(id),
+        authorization,
+        new Types.ObjectId(changedAuthorizationByUser)
+      )
 
-      if (buy == null) { return res.status(404).json({ message: 'Solicitação de compra não encontrada' }) }
-      res.json(buy)
+      if (buy == null) {
+        return res.status(404).json({ message: 'Solicitação de compra não encontrada' })
+      }
+
+      res.json(normalize(buy))
     } catch (error) {
       next(error)
     }
