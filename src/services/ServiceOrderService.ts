@@ -38,7 +38,7 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
 
   async findServiceOrdersFilters (filters?: InputFilters): Promise<IServiceOrder[]> {
     if (!filters || Object.values(filters).every(value => value === undefined)) {
-      return this.serviceOrderRepository.findAll()
+      return this.serviceOrderRepository.findAll({ createdAt: -1 })
     }
 
     if (filters.entryDate) {
@@ -52,7 +52,8 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     )
 
     const pipeline: any[] = [
-      { $match: cleanFilters }
+      { $match: cleanFilters },
+      { $sort: { createdAt: -1 } }
     ]
     console.log('Pipeline:', JSON.stringify(pipeline, null, 2))
     return this.serviceOrderRepository.aggregateMany(pipeline)
