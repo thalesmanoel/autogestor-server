@@ -155,6 +155,8 @@ export default class ServiceOrderService extends BaseService<IServiceOrder> {
     const existingOrder = await this.serviceOrderRepository.findById(id)
     if (!existingOrder) return null
 
+    if (data.paid) data.paymentDate = new Date()
+
     const mergedData = { ...existingOrder.toObject(), ...data }
 
     const totals = await this.calculateTotals(mergedData as IServiceOrder)
