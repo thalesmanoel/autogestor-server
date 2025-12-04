@@ -13,7 +13,7 @@ export default class BaseRepository<T extends Document> {
     return this.model.create(data) as Promise<BaseDoc<T>>
   }
 
-  async findAll (sort: any): Promise<T[]> {
+  async findAll (sort?: any): Promise<T[]> {
     return this.model.find().sort(sort)
   }
 

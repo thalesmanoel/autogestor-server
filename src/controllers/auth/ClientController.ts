@@ -2,16 +2,24 @@ import { NextFunction, Request, Response } from 'express'
 import { Types } from 'mongoose'
 
 import ClientService from '../../services/ClientService'
+import { Validation } from '../../utils/validation'
 
 export default class ClientController {
   private clientService: ClientService
+  private validation: Validation
 
   constructor () {
     this.clientService = new ClientService()
+    this.validation = new Validation()
   }
 
   create = async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const { cpf, cnpj } = req.body
+
+      if (cpf && !this.validation.cpf(cpf)) return res.status(400).json({ message: 'CPF inválido' })
+      if (cnpj && !this.validation.cnpj(cnpj)) return res.status(400).json({ message: 'CNPJ inválido' })
+
       const client = await this.clientService.create(req.body)
       res.status(201).json(client)
     } catch (error) {
@@ -50,6 +58,9 @@ export default class ClientController {
     try {
       const { id } = req.params
       const data = req.body
+
+      if (data.cpf && !this.validation.cpf(data.cpf)) return res.status(400).json({ message: 'CPF inválido' })
+      if (data.cnpj && !this.validation.cnpj(data.cnpj)) return res.status(400).json({ message: 'CNPJ inválido' })
 
       const client = await this.clientService.update(new Types.ObjectId(id), data)
       if (!client) return res.status(404).json({ message: 'Cliente não encontrado' })

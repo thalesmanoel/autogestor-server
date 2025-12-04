@@ -16,7 +16,6 @@ export class Validation {
   public cpf (cpf: string): boolean {
     if (!cpf || cpf.length !== 11) return false
 
-    // Elimina CPFs repetidos
     if (/^(\d)\1{10}$/.test(cpf)) return false
 
     let sum = 0
@@ -41,7 +40,6 @@ export class Validation {
   public cnpj (cnpj: string): boolean {
     if (!cnpj || cnpj.length !== 14) return false
 
-    // Elimina CNPJs repetidos
     if (/^(\d)\1{13}$/.test(cnpj)) return false
 
     let length = 12
